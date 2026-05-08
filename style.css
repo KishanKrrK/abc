@@ -332,7 +332,7 @@ body{
 }
 
 /* OVERLAY */
-#loginModal {
+#loginModal, #signupModal {
     position: fixed;
     top: 0;
     left: 0;
@@ -397,11 +397,12 @@ body{
 }
 
 .extraOptions {
+    max-width: 100%;
     display: flex;
     justify-content: space-between;
     font-size: 12px;
     margin-bottom: 20px;
-    align-items: top;
+    align-items: center;
 }
 
 .extraOptions label {
