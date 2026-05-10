@@ -1,42 +1,6 @@
 let lostItems = JSON.parse(localStorage.getItem("lostItems")) || [];
 let foundItems = JSON.parse(localStorage.getItem("foundItems")) || [];
 
-// document.querySelector("#report form").addEventListener("submit", function(e) {
-//     e.preventDefault();
-
-//     let item = {
-//         name: this.item_name.value,
-//         description: this.description.value,
-//         date: this.date_lost.value,
-//         location: this.location.value
-//     };
-
-//     lostItems.push(item);
-//     localStorage.setItem("lostItems", JSON.stringify(lostItems));
-
-//     alert("Lost item reported successfully!");
-//     this.reset();
-// });
-
-// document.querySelector("#found form").addEventListener("submit", function(e) {
-//     e.preventDefault();
-
-//     let inputs = this.querySelectorAll("input, textarea");
-
-//     let item = {
-//         name: inputs[0].value,
-//         description: inputs[1].value,
-//         date: inputs[2].value,
-//         location: inputs[3].value
-//     };
-
-//     foundItems.push(item);
-//     localStorage.setItem("foundItems", JSON.stringify(foundItems));
-
-//     alert("Found item reported successfully!");
-//     this.reset();
-// });
-
 // REPORT
 const reportForm = document.querySelector("#report form");
 if (reportForm) {
@@ -58,7 +22,7 @@ if (reportForm) {
     });
 }
 
-// FOUNDY
+// FOUND
 const foundForm = document.querySelector("#found form");
 if (foundForm) {
     foundForm.addEventListener("submit", function(e) {
