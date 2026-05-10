@@ -266,6 +266,82 @@ body{
     }
 }
 
+/* HOW IT WORKS SECTION */
+
+.steps{
+    padding: 5rem 2rem;
+    text-align: center;
+}
+
+.stepsTitle{
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 3rem;
+}
+
+.stepCards{
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.stepCard{
+    background-color: var(--background-color);
+    width: 320px;
+    padding: 2rem 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border: 1px solid var(--light-gray);
+}
+
+.stepCard:hover{
+    transform: translateY(-8px);
+    border-color: var(--accent-color);
+    box-shadow: 0 10px 25px rgba(99,102,241,0.15);
+}
+
+.stepIcon{
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 1.2rem;
+    padding: 0.8rem;
+    background-color: var(--switch-bg);
+    border-radius: 50%;
+}
+
+.stepCard h3{
+    font-size: 1.4rem;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+}
+
+.stepCard p{
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--dark-gray);
+}
+
+@media screen and (max-width: 768px){
+
+    .stepsTitle{
+        font-size: 2rem;
+    }
+
+    .stepCards{
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .stepCard{
+        width: 100%;
+        max-width: 350px;
+    }
+}
+
 .form{
     max-width: 880px;
     display: flex;
