@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Lost & Found</title>
+    <link rel="stylesheet" href="form.css">
+</head>
+<body>
+     <header>
+        <div class="logo-container">
+            <span class="logo-icon">🔍</span>
+            <h1>Lost & Found</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#report">Report Item</a></li>
+                <li><a href="#gallery">View Items</a></li>
+            </ul>
+        </nav>
+    </header>
+            
+    <main>
+        <section id="home" class="hero">
+            <h2>Welcome to the Smart Lost & Found System</h2>
+            <p>Easily report lost items or reunite found items with their owners.</p>
+        </section>
+
+        <section id="report" class="form-section">
+            <h2>Report an Item</h2>
+            <form id="itemForm">
+                <div class="form-group">
+                    <label for="itemName">Item Name:</label>
+                    <input type="text" id="itemName" required placeholder="e.g., Blue Backpack">
+                </div>
+                
+                <div class="form-group">
+                    <label for="itemDescription">Description:</label>
+                    <textarea id="itemDescription" required placeholder="Where was it found/lost? Any distinguishing features?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="itemStatus">Initial Status:</label>
+                    <select id="itemStatus">
+                        <option value="Lost">Lost</option>
+                        <option value="Found">Found</option>
+                    </select>
+                </div>
+                    <div class="form-group">
+                    <label for="itemPhoto">Upload Photo:</label>
+                    <input type="file" id="itemPhoto" accept="image/*">
+                </div>
+               
+
+                <button type="submit">Submit Report</button>
+            </form>
+        </section>
+
+        <section id="gallery" class="gallery-section">
+            <h2>Reported Items</h2>
+            <div id="itemsContainer" class="items-grid">
+                </div>
+        </section>
+    </main>
+
+
+
+
+    <script src="form.js"></script>
+</body>
+</html>

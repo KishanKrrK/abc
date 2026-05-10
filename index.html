@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smart Lost and Found System in Campus</title>
-    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="style.css" />
     <script type="text/javascript" src="darkmode.js" defer></script>
   </head>
@@ -26,10 +26,29 @@
         <a href="#contact" class="contactButton"> Contact Us </a>
 
         <div class="switchbutton" id="theme-Switch">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Zm0-80q88 0 158-48.5T740-375q-20 5-40 8t-40 3q-123 0-209.5-86.5T364-660q0-20 3-40t8-40q-78 32-126.5 102T200-480q0 116 82 198t198 82Zm-10-270Z"/></svg>
-          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M565-395q35-35 35-85t-35-85q-35-35-85-35t-85 35q-35 35-35 85t35 85q35 35 85 35t85-35Zm-226.5 56.5Q280-397 280-480t58.5-141.5Q397-680 480-680t141.5 58.5Q680-563 680-480t-58.5 141.5Q563-280 480-280t-141.5-58.5ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Zm326-268Z"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="#e3e3e3"
+          >
+            <path
+              d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Zm0-80q88 0 158-48.5T740-375q-20 5-40 8t-40 3q-123 0-209.5-86.5T364-660q0-20 3-40t8-40q-78 32-126.5 102T200-480q0 116 82 198t198 82Zm-10-270Z"
+            />
+          </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="#e3e3e3"
+          >
+            <path
+              d="M565-395q35-35 35-85t-35-85q-35-35-85-35t-85 35q-35 35-35 85t35 85q35 35 85 35t85-35Zm-226.5 56.5Q280-397 280-480t58.5-141.5Q397-680 480-680t141.5 58.5Q680-563 680-480t-58.5 141.5Q563-280 480-280t-141.5-58.5ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Zm326-268Z"
+            />
+          </svg>
         </div>
-
       </header>
     </div>
 
@@ -42,10 +61,10 @@
             This system helps students and staff report and find lost items
             within the campus.
           </p>
-              <div class="buttonGroup">
-                <a href="#login" class="login">Log In</a>
-                <a href="#signup" class="signup">Sign Up</a>
-              </div>
+          <div class="buttonGroup">
+            <a href="#" class="login" id="openLogin">Log In</a>
+            <a href="#" class="signup">Sign Up</a>
+          </div>
         </div>
 
         <div class="rightMain">
@@ -54,70 +73,6 @@
           </div>
         </div>
       </section>
-    </div>
-
-    <div class="form">
-      <div class="leftform">
-        <!-- Report Form -->
-        <section id="report">
-          <h2 class="headContent">Report Lost Item</h2><br /><br />
-          <form class="reportform">
-            <label>Item Name:</label>
-            <input type="text" name="item_name" placeholder="Wallet"/><br /><br />
-
-            <label>Description:</label>
-            <textarea name="description" placeholder="brown in colour"></textarea><br /><br />
-
-            <div class="datechoose">
-              <label>Date Lost:</label>
-              <input type="date" name="date_lost"/><br /><br />
-            </div>
-
-            <label>Location:  </label>
-            <input type="text" name="location" placeholder="College Canteen"/><br /><br />
-
-            <div class="imagesection">
-              <label>Upload Image:</label>
-              <input type="file" /><br /><br />
-            </div>
-
-            <div class="submitsection">
-              <button type="submit" class="submitbutton">Submit</button>
-            </div>
-          </form>
-        </section>
-      </div>
-
-      <div class="rightform">
-        <!-- Report Found Item -->
-        <section id="found">
-          <h2 class="headContent">Report Found Item</h2><br /><br />
-          <form class="foundform">
-            <label>Item Name:</label>
-            <input type="text" placeholder="Wallet"/><br /><br />
-
-            <label>Description:</label>
-            <textarea placeholder="brown in colour"></textarea><br /><br />
-
-            <div class="datechoose">
-              <label>Date Found:</label>
-              <input type="date" /><br /><br />
-            </div>
-
-            <label>Location:  </label>
-            <input type="text" placeholder="College Canteen"/><br /><br />
-
-            <div class="imagesection">
-              <label>Upload Image:</label>
-              <input type="file" /><br /><br />
-            </div>
-
-            <div class="submitsection">
-              <button type="submit" class="submitbutton">Submit</button>
-            </div>
-          </form>
-        </section>
-      </div>
     </div>
 
     <!-- Search Section -->
@@ -171,6 +126,67 @@
     <footer>
       <p>&copy; 2026 Smart Lost & Found System | Campus Project</p>
     </footer>
+
+    <!-- Login Popup Modal -->
+    <div id="loginModal">
+      <div class="loginCard" style="position: relative">
+        <span id="closeLogin">&times;</span>
+
+        <h2>Login</h2>
+
+        <form>
+          <label>Username</label>
+          <input type="text" placeholder="Enter your username" />
+
+          <label>Password</label>
+          <input type="password" placeholder="Enter your password" />
+
+          <div class="extraOptions">
+            <div class="rememberme">
+              <input type="checkbox" id="remember" />
+              <label for="remember">Remember me</label>
+            </div>
+            <a href="#">Forgot Password?</a>
+          </div>
+
+          <button type="submit">Login</button>
+
+          <div class="registerText">
+            Don't have an account? <a href="#">Register</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="signupModal">
+      <div class="loginCard" style="position: relative">
+        <span id="closeLogin">&times;</span>
+
+        <h2>Sign Up</h2>
+
+        <form>
+          <label>Username</label>
+          <input type="text" placeholder="Enter your username" />
+
+          <label>Password</label>
+          <input type="password" placeholder="Enter your password" />
+
+          <div class="extraOptions">
+            <div class="rememberme">
+              <input type="checkbox" id="remember" />
+              <label for="remember">Remember me</label>
+            </div>
+            <a href="#">Forgot Password?</a>
+          </div>
+
+          <button type="submit">SignUp</button>
+
+          <div class="registerText">
+            Don't have an account? <a href="#">Login</a>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <script src="index.js"></script>
   </body>

@@ -1,41 +1,85 @@
 let lostItems = JSON.parse(localStorage.getItem("lostItems")) || [];
 let foundItems = JSON.parse(localStorage.getItem("foundItems")) || [];
 
-document.querySelector("#report form").addEventListener("submit", function(e) {
-    e.preventDefault();
+// document.querySelector("#report form").addEventListener("submit", function(e) {
+//     e.preventDefault();
 
-    let item = {
-        name: this.item_name.value,
-        description: this.description.value,
-        date: this.date_lost.value,
-        location: this.location.value
-    };
+//     let item = {
+//         name: this.item_name.value,
+//         description: this.description.value,
+//         date: this.date_lost.value,
+//         location: this.location.value
+//     };
 
-    lostItems.push(item);
-    localStorage.setItem("lostItems", JSON.stringify(lostItems));
+//     lostItems.push(item);
+//     localStorage.setItem("lostItems", JSON.stringify(lostItems));
 
-    alert("Lost item reported successfully!");
-    this.reset();
-});
+//     alert("Lost item reported successfully!");
+//     this.reset();
+// });
 
-document.querySelector("#found form").addEventListener("submit", function(e) {
-    e.preventDefault();
+// document.querySelector("#found form").addEventListener("submit", function(e) {
+//     e.preventDefault();
 
-    let inputs = this.querySelectorAll("input, textarea");
+//     let inputs = this.querySelectorAll("input, textarea");
 
-    let item = {
-        name: inputs[0].value,
-        description: inputs[1].value,
-        date: inputs[2].value,
-        location: inputs[3].value
-    };
+//     let item = {
+//         name: inputs[0].value,
+//         description: inputs[1].value,
+//         date: inputs[2].value,
+//         location: inputs[3].value
+//     };
 
-    foundItems.push(item);
-    localStorage.setItem("foundItems", JSON.stringify(foundItems));
+//     foundItems.push(item);
+//     localStorage.setItem("foundItems", JSON.stringify(foundItems));
 
-    alert("Found item reported successfully!");
-    this.reset();
-});
+//     alert("Found item reported successfully!");
+//     this.reset();
+// });
+
+// REPORT
+const reportForm = document.querySelector("#report form");
+if (reportForm) {
+    reportForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let item = {
+            name: this.item_name.value,
+            description: this.description.value,
+            date: this.date_lost.value,
+            location: this.location.value
+        };
+
+        lostItems.push(item);
+        localStorage.setItem("lostItems", JSON.stringify(lostItems));
+
+        alert("Lost item reported successfully!");
+        this.reset();
+    });
+}
+
+// FOUNDY
+const foundForm = document.querySelector("#found form");
+if (foundForm) {
+    foundForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let inputs = this.querySelectorAll("input, textarea");
+
+        let item = {
+            name: inputs[0].value,
+            description: inputs[1].value,
+            date: inputs[2].value,
+            location: inputs[3].value
+        };
+
+        foundItems.push(item);
+        localStorage.setItem("foundItems", JSON.stringify(foundItems));
+
+        alert("Found item reported successfully!");
+        this.reset();
+    });
+}
 
 document.querySelector("#search form").addEventListener("submit", function(e) {
     e.preventDefault();
@@ -76,3 +120,31 @@ window.onload = function() {
         resultsList.appendChild(li);
     });
 };
+
+const openBtn = document.getElementById("openLogin");
+const modal = document.getElementById("loginModal");
+const closeBtn = document.getElementById("closeLogin");
+
+// Open popup
+openBtn.addEventListener("click", () => {
+    modal.style.display = "flex";
+});
+
+// Close popup (cross button)
+closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+});
+
+// Close on outside click
+window.addEventListener("click", (e) => {
+    if (e.target === modal) {
+        modal.style.display = "none";
+    }
+});
+
+// Close on ESC key
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        modal.style.display = "none";
+    }
+});
