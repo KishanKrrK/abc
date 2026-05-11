@@ -189,35 +189,36 @@
       </div>
     </div>
 
-    <div id="signupModal">
-      <div class="loginCard" style="position: relative">
-        <span id="closeLogin">&times;</span>
+    <!-- Signup Popup Modal -->
+    <form id="signupForm">
+      <label>Username</label>
+      <input
+        type="text"
+        id="username"
+        placeholder="Choose a username"
+        required
+        minlength="4"
+      />
 
-        <h2>Sign Up</h2>
+      <label>Email</label>
+      <input type="email" placeholder="Enter your email" required />
 
-        <form>
-          <label>Username</label>
-          <input type="text" placeholder="Enter your username" />
+      <label>Password</label>
+      <input
+        type="password"
+        id="password"
+        placeholder="Create a strong password"
+        required
+        minlength="8"
+      />
 
-          <label>Password</label>
-          <input type="password" placeholder="Enter your password" />
+      <small class="passwordHint">
+        Password must contain 8 characters, 1 uppercase, 1 number and 1 special
+        character.
+      </small>
 
-          <div class="extraOptions">
-            <div class="rememberme">
-              <input type="checkbox" id="remember" />
-              <label for="remember">Remember me</label>
-            </div>
-            <a href="#">Forgot Password?</a>
-          </div>
-
-          <button type="submit">SignUp</button>
-
-          <div class="registerText">
-            Don't have an account? <a href="#">Login</a>
-          </div>
-        </form>
-      </div>
-    </div>
+      <button type="submit">Sign Up</button>
+    </form>
 
     <script src="index.js"></script>
   </body>

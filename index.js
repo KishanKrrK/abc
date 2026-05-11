@@ -1,114 +1,140 @@
 let lostItems = JSON.parse(localStorage.getItem("lostItems")) || [];
 let foundItems = JSON.parse(localStorage.getItem("foundItems")) || [];
 
-// REPORT
+// REPORT FORM
 const reportForm = document.querySelector("#report form");
+
 if (reportForm) {
-    reportForm.addEventListener("submit", function(e) {
-        e.preventDefault();
+  reportForm.addEventListener("submit", function (e) {
+    e.preventDefault();
 
-        let item = {
-            name: this.item_name.value,
-            description: this.description.value,
-            date: this.date_lost.value,
-            location: this.location.value
-        };
+    let item = {
+      name: this.item_name.value,
+      description: this.description.value,
+      date: this.date_lost.value,
+      location: this.location.value,
+    };
 
-        lostItems.push(item);
-        localStorage.setItem("lostItems", JSON.stringify(lostItems));
+    lostItems.push(item);
 
-        alert("Lost item reported successfully!");
-        this.reset();
-    });
+    localStorage.setItem("lostItems", JSON.stringify(lostItems));
+
+    alert("Lost item reported successfully!");
+
+    this.reset();
+  });
 }
 
-// FOUND
+// FOUND FORM
 const foundForm = document.querySelector("#found form");
+
 if (foundForm) {
-    foundForm.addEventListener("submit", function(e) {
-        e.preventDefault();
+  foundForm.addEventListener("submit", function (e) {
+    e.preventDefault();
 
-        let inputs = this.querySelectorAll("input, textarea");
+    let item = {
+      name: this.item_name.value,
+      description: this.description.value,
+      date: this.date_found.value,
+      location: this.location.value,
+    };
 
-        let item = {
-            name: inputs[0].value,
-            description: inputs[1].value,
-            date: inputs[2].value,
-            location: inputs[3].value
-        };
+    foundItems.push(item);
 
-        foundItems.push(item);
-        localStorage.setItem("foundItems", JSON.stringify(foundItems));
+    localStorage.setItem("foundItems", JSON.stringify(foundItems));
 
-        alert("Found item reported successfully!");
-        this.reset();
-    });
+    alert("Found item reported successfully!");
+
+    this.reset();
+  });
 }
 
-document.querySelector("#search form").addEventListener("submit", function(e) {
+// SEARCH FORM
+const searchForm = document.querySelector("#search form");
+
+if (searchForm) {
+  searchForm.addEventListener("submit", function (e) {
     e.preventDefault();
 
     let keyword = this.querySelector("input").value.toLowerCase();
+
     let resultsList = document.querySelector("#search ul");
 
     resultsList.innerHTML = "";
 
     let results = [...lostItems, ...foundItems];
 
-    let filtered = results.filter(item => 
+    let filtered = results.filter(
+      (item) =>
         item.name.toLowerCase().includes(keyword) ||
         item.description.toLowerCase().includes(keyword)
     );
 
     if (filtered.length === 0) {
-        resultsList.innerHTML = "<li>No items found</li>";
-        return;
+      resultsList.innerHTML = "<li>No items found</li>";
+      return;
     }
 
-    filtered.forEach(item => {
-        let li = document.createElement("li");
-        li.textContent = `${item.name} - ${item.location}`;
-        resultsList.appendChild(li);
+    filtered.forEach((item) => {
+      let li = document.createElement("li");
+
+      li.textContent = `${item.name} - ${item.location}`;
+
+      resultsList.appendChild(li);
     });
+  });
+}
+
+// SHOW ALL ITEMS ON PAGE LOAD
+document.addEventListener("DOMContentLoaded", () => {
+  let resultsList = document.querySelector("#search ul");
+
+  if (!resultsList) return;
+
+  resultsList.innerHTML = "";
+
+  let allItems = [...lostItems, ...foundItems];
+
+  allItems.forEach((item) => {
+    let li = document.createElement("li");
+
+    li.textContent = `${item.name} - ${item.location}`;
+
+    resultsList.appendChild(li);
+  });
 });
 
-window.onload = function() {
-    let resultsList = document.querySelector("#search ul");
-    resultsList.innerHTML = "";
-
-    let allItems = [...lostItems, ...foundItems];
-
-    allItems.forEach(item => {
-        let li = document.createElement("li");
-        li.textContent = `${item.name} - ${item.location}`;
-        resultsList.appendChild(li);
-    });
-};
-
+// LOGIN MODAL
 const openBtn = document.getElementById("openLogin");
+
 const modal = document.getElementById("loginModal");
+
 const closeBtn = document.getElementById("closeLogin");
 
-// Open popup
-openBtn.addEventListener("click", () => {
+// OPEN MODAL
+if (openBtn) {
+  openBtn.addEventListener("click", () => {
     modal.style.display = "flex";
-});
+  });
+}
 
-// Close popup (cross button)
-closeBtn.addEventListener("click", () => {
+// CLOSE MODAL
+if (closeBtn) {
+  closeBtn.addEventListener("click", () => {
     modal.style.display = "none";
-});
+  });
+}
 
-// Close on outside click
+// CLOSE ON OUTSIDE CLICK
 window.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        modal.style.display = "none";
-    }
+  if (e.target === modal) {
+    modal.style.display = "none";
+  }
 });
 
-// Close on ESC key
+// CLOSE ON ESC KEY
 document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-        modal.style.display = "none";
-    }
+  if (e.key === "Escape") {
+    modal.style.display = "none";
+  }
 });
