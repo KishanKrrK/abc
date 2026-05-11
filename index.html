@@ -63,7 +63,10 @@
           </p>
           <div class="buttonGroup">
             <a href="#" class="login" id="openLogin">Log In</a>
+
             <a href="#" class="signup" id="openSignup">Sign Up</a>
+
+            <a href="#" class="reportBtn" id="openReport"> Report Item </a>
           </div>
         </div>
 
@@ -189,51 +192,90 @@
       </div>
     </div>
 
-<!-- SIGNUP MODAL -->
-<div id="signupModal">
-  <div class="loginCard">
+    <!-- SIGNUP MODAL -->
+    <div id="signupModal">
+      <div class="loginCard">
+        <span id="closeSignup">&times;</span>
 
-    <span id="closeSignup">&times;</span>
+        <h2>Create Account</h2>
 
-    <h2>Create Account</h2>
+        <form id="signupForm">
+          <label>Username</label>
+          <input
+            type="text"
+            id="signupUsername"
+            placeholder="Enter unique username"
+            required
+          />
 
-    <form id="signupForm">
+          <label>Email</label>
+          <input
+            type="email"
+            id="signupEmail"
+            placeholder="Enter your email"
+            required
+          />
 
-      <label>Username</label>
-      <input
-        type="text"
-        id="signupUsername"
-        placeholder="Enter unique username"
-        required
-      />
+          <label>Password</label>
+          <input
+            type="password"
+            id="signupPassword"
+            placeholder="Create password"
+            required
+          />
 
-      <label>Email</label>
-      <input
-        type="email"
-        id="signupEmail"
-        placeholder="Enter your email"
-        required
-      />
+          <button type="submit">Sign Up</button>
 
-      <label>Password</label>
-      <input
-        type="password"
-        id="signupPassword"
-        placeholder="Create password"
-        required
-      />
-
-      <button type="submit">Sign Up</button>
-
-      <div class="registerText">
-        Already have an account?
-        <a href="#" id="goToLogin">Login</a>
+          <div class="registerText">
+            Already have an account?
+            <a href="#" id="goToLogin">Login</a>
+          </div>
+        </form>
       </div>
+    </div>
 
-    </form>
+    <!-- REPORT MODAL -->
 
-  </div>
-</div>
+    <div id="reportModal">
+      <div class="reportCard">
+        <span id="closeReport">&times;</span>
+
+        <h2>Report Lost / Found Item</h2>
+
+        <form id="itemForm">
+          <label>Item Name</label>
+          <input
+            type="text"
+            id="itemName"
+            placeholder="Enter item name"
+            required
+          />
+
+          <label>Description</label>
+          <textarea
+            id="itemDescription"
+            placeholder="Describe the item"
+            required
+          ></textarea>
+
+          <label>Status</label>
+
+          <select id="itemStatus">
+            <option value="Lost">Lost</option>
+
+            <option value="Found">Found</option>
+          </select>
+
+          <label>Upload Photo</label>
+
+          <input type="file" id="itemPhoto" accept="image/*" />
+
+          <button type="submit">Submit Report</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast"></div>
 
     <script src="index.js"></script>
   </body>
