@@ -63,7 +63,7 @@
           </p>
           <div class="buttonGroup">
             <a href="#" class="login" id="openLogin">Log In</a>
-            <a href="#" class="signup">Sign Up</a>
+            <a href="#" class="signup" id="openSignup">Sign Up</a>
           </div>
         </div>
 
@@ -189,36 +189,51 @@
       </div>
     </div>
 
-    <!-- Signup Popup Modal -->
+<!-- SIGNUP MODAL -->
+<div id="signupModal">
+  <div class="loginCard">
+
+    <span id="closeSignup">&times;</span>
+
+    <h2>Create Account</h2>
+
     <form id="signupForm">
+
       <label>Username</label>
       <input
         type="text"
-        id="username"
-        placeholder="Choose a username"
+        id="signupUsername"
+        placeholder="Enter unique username"
         required
-        minlength="4"
       />
 
       <label>Email</label>
-      <input type="email" placeholder="Enter your email" required />
+      <input
+        type="email"
+        id="signupEmail"
+        placeholder="Enter your email"
+        required
+      />
 
       <label>Password</label>
       <input
         type="password"
-        id="password"
-        placeholder="Create a strong password"
+        id="signupPassword"
+        placeholder="Create password"
         required
-        minlength="8"
       />
 
-      <small class="passwordHint">
-        Password must contain 8 characters, 1 uppercase, 1 number and 1 special
-        character.
-      </small>
-
       <button type="submit">Sign Up</button>
+
+      <div class="registerText">
+        Already have an account?
+        <a href="#" id="goToLogin">Login</a>
+      </div>
+
     </form>
+
+  </div>
+</div>
 
     <script src="index.js"></script>
   </body>

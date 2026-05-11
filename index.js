@@ -67,7 +67,7 @@ if (searchForm) {
     let filtered = results.filter(
       (item) =>
         item.name.toLowerCase().includes(keyword) ||
-        item.description.toLowerCase().includes(keyword)
+        item.description.toLowerCase().includes(keyword),
     );
 
     if (filtered.length === 0) {
@@ -85,7 +85,7 @@ if (searchForm) {
   });
 }
 
-// SHOW ALL ITEMS ON PAGE LOAD
+// SHOW ITEMS ON LOAD
 document.addEventListener("DOMContentLoaded", () => {
   let resultsList = document.querySelector("#search ul");
 
@@ -106,35 +106,125 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // LOGIN MODAL
 const openBtn = document.getElementById("openLogin");
-
 const modal = document.getElementById("loginModal");
-
 const closeBtn = document.getElementById("closeLogin");
 
-// OPEN MODAL
+// SIGNUP MODAL
+const openSignup = document.getElementById("openSignup");
+const signupModal = document.getElementById("signupModal");
+const closeSignup = document.getElementById("closeSignup");
+
+const signupForm = document.getElementById("signupForm");
+const goToLogin = document.getElementById("goToLogin");
+
+// OPEN LOGIN
 if (openBtn) {
   openBtn.addEventListener("click", () => {
     modal.style.display = "flex";
   });
 }
 
-// CLOSE MODAL
+// CLOSE LOGIN
 if (closeBtn) {
   closeBtn.addEventListener("click", () => {
     modal.style.display = "none";
   });
 }
 
-// CLOSE ON OUTSIDE CLICK
+// OPEN SIGNUP
+if (openSignup) {
+  openSignup.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    signupModal.style.display = "flex";
+  });
+}
+
+// CLOSE SIGNUP
+if (closeSignup) {
+  closeSignup.addEventListener("click", () => {
+    signupModal.style.display = "none";
+  });
+}
+
+// SWITCH SIGNUP → LOGIN
+if (goToLogin) {
+  goToLogin.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    signupModal.style.display = "none";
+
+    modal.style.display = "flex";
+  });
+}
+
+// REGISTER LINK LOGIN → SIGNUP
+const registerLink = document.querySelector(".registerText a");
+
+if (registerLink) {
+  registerLink.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    modal.style.display = "none";
+
+    signupModal.style.display = "flex";
+  });
+}
+
+// CLOSE OUTSIDE
 window.addEventListener("click", (e) => {
   if (e.target === modal) {
     modal.style.display = "none";
   }
+
+  if (e.target === signupModal) {
+    signupModal.style.display = "none";
+  }
 });
 
-// CLOSE ON ESC KEY
+// ESC KEY CLOSE
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     modal.style.display = "none";
+
+    signupModal.style.display = "none";
   }
 });
+
+// SIGNUP FORM
+if (signupForm) {
+  signupForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const username = document.getElementById("signupUsername").value;
+
+    const email = document.getElementById("signupEmail").value;
+
+    const password = document.getElementById("signupPassword").value;
+
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+
+    const userExists = users.some((user) => user.username === username);
+
+    if (userExists) {
+      alert("Username already exists!");
+      return;
+    }
+
+    users.push({
+      username,
+      email,
+      password,
+    });
+
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("Signup successful!");
+
+    signupForm.reset();
+
+    signupModal.style.display = "none";
+
+    modal.style.display = "flex";
+  });
+}
