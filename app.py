@@ -8,7 +8,7 @@ from bson.errors import InvalidId
 import random
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
-from flask_mail import Mail, Message
+import resend
 from models import User, ItemStatusEnum, CourseEnum, BranchEnum
 
 app = Flask(__name__)
@@ -17,16 +17,11 @@ app.config['SECURITY_PASSWORD_SALT'] = os.environ.get('SECURITY_PASSWORD_SALT', 
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb+srv://kishan9798760468_db_user:joGeYTKH1bfd9neF@cluster0.nro9z2t.mongodb.net/lost_found_db?appName=Cluster0')
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 465))
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'shashishe2160@gmail.com')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'bbctalfofplhhkea')
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_TIMEOUT'] = 10
+# Resend API key — set RESEND_API_KEY env var on Render
+resend.api_key = os.environ.get('RESEND_API_KEY', '')
+REND_FROM_EMAIL = os.environ.get('MAIL_FROM', 'onboarding@resend.dev')
 
 mongo = PyMongo(app)
-mail = Mail(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -68,24 +63,38 @@ def inject_notification_count():
 def generate_otp():
     return f"{random.randint(100000, 999999)}"
 
-def send_otp_reg(email, otp):
-    msg = Message('Email Confirmation OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[email])
-    msg.html = f'<div style="font-family:Arial;color:#333"><h2 style="color:#004085">LOST-FOUND Management Team</h2><p>Your OTP: <strong style="font-size:18px;color:#007bff">{otp}</strong></p><p style="color:#6c757d">If you did not request this, ignore this email.</p></div>'
+def _send_email(to_email, subject, html_body):
+    """Send email via Resend HTTP API. Returns True on success, False on failure."""
+    if not resend.api_key:
+        print("RESEND_API_KEY not set — skipping email")
+        return False
     try:
-        mail.send(msg)
+        resend.Emails.send({
+            'from': REND_FROM_EMAIL,
+            'to': [to_email],
+            'subject': subject,
+            'html': html_body
+        })
         return True
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        print(f"Failed to send email via Resend: {e}")
         return False
 
+def send_otp_reg(email, otp):
+    html = (f'<div style="font-family:Arial;color:#333;max-width:480px">'
+            f'<h2 style="color:#004085">LOST-FOUND Management Team</h2>'
+            f'<p>Welcome! Please verify your email to complete registration.</p>'
+            f'<p>Your OTP: <strong style="font-size:22px;color:#007bff">{otp}</strong></p>'
+            f'<p style="color:#6c757d">This OTP expires in 10 minutes.</p></div>')
+    return _send_email(email, 'Email Confirmation OTP Code', html)
+
 def send_otp_forget_pass(email, otp):
-    msg = Message('Password Reset OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[email])
-    msg.html = f'<div style="font-family:Arial;color:#333"><h2 style="color:#004085">LOST-FOUND Management Team</h2><p>Password reset OTP: <strong style="font-size:18px;color:#007bff">{otp}</strong></p><p style="color:#6c757d">If you did not request this, secure your account immediately.</p></div>'
-    try:
-        mail.send(msg)
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        flash('Failed to send OTP. Please try again later.', 'danger')
+    html = (f'<div style="font-family:Arial;color:#333;max-width:480px">'
+            f'<h2 style="color:#004085">LOST-FOUND Management Team</h2>'
+            f'<p>You requested a password reset.</p>'
+            f'<p>Your OTP: <strong style="font-size:22px;color:#007bff">{otp}</strong></p>'
+            f'<p style="color:#6c757d">This OTP expires in 10 minutes. If you did not request this, secure your account.</p></div>')
+    return _send_email(email, 'Password Reset OTP Code', html)
 
 # ── Auth Routes ────────────────────────────────────────────────────────────────
 @app.route('/register', methods=['GET', 'POST'])
