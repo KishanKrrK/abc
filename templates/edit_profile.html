@@ -66,7 +66,7 @@
                 <label for="batch"><i class="fas fa-calendar-alt mr-1" style="color:var(--accent-primary);"></i> Batch Year</label>
                 <select class="form-control" id="batch" name="batch" required>
                     {% for year in range(2020, 2031) %}
-                    <option value="{{ year }}" {% if current_user.batch == year %}selected{% endif %}>{{ year }}</option>
+                    <option value="{{ year }}" {% if current_user.batch|int == year %}selected{% endif %}>{{ year }}</option>
                     {% endfor %}
                 </select>
             </div>

@@ -169,7 +169,7 @@ def verify_registration():
                 'last_name': temp_user['last_name'],
                 'password': temp_user['password'],
                 'roll_number': temp_user['roll_number'],
-                'batch': temp_user['batch'],
+                'batch': int(temp_user['batch']) if temp_user['batch'] else 0,
                 'course': temp_user['course'],
                 'branch': temp_user['branch'],
                 'is_verified': True,
@@ -297,6 +297,30 @@ def home_page():
                     .limit(per_page))
     items      = list(items_cursor)
     categories = list(mongo.db.categories.find())
+
+    # Add string id to categories
+    for cat in categories:
+        cat['id'] = str(cat['_id'])
+    cat_map = {cat['id']: cat['name'] for cat in categories}
+
+    # Collect unique owner IDs and fetch them in one batch
+    owner_ids = list({item['user_id'] for item in items if item.get('user_id')})
+    owner_map = {}
+    for uid in owner_ids:
+        try:
+            u = mongo.db.users.find_one({'_id': ObjectId(uid)}, {'first_name': 1, 'profile_pic': 1})
+            if u:
+                owner_map[uid] = u
+        except Exception:
+            pass
+
+    # Enrich each item with id, category object, and owner object
+    for item in items:
+        item['id'] = str(item['_id'])
+        cid = item.get('category_id', '')
+        item['category'] = {'name': cat_map[cid]} if cid and cid in cat_map else None
+        uid = item.get('user_id', '')
+        item['owner'] = owner_map.get(uid)
 
     # Simple pagination object
     class Pagination:
@@ -465,6 +489,12 @@ def view_notifications():
 @app.route('/profile')
 @login_required
 def view_profile():
+    # User's own posted items
+    user_items = list(mongo.db.items.find({'user_id': current_user.id}).sort('created_at', -1))
+    for it in user_items:
+        it['id'] = str(it['_id'])
+
+    # Claimed items via aggregation
     pipeline = [
         {'$match': {'claimer_id': current_user.id}},
         {'$sort': {'claimed_at': -1}},
@@ -473,8 +503,15 @@ def view_profile():
                      'foreignField': '_id', 'as': 'item_data'}},
         {'$unwind': '$item_data'}
     ]
-    claimed_items = list(mongo.db.claimed_items.aggregate(pipeline))
-    return render_template('profile.html', claimed_items=claimed_items)
+    raw = list(mongo.db.claimed_items.aggregate(pipeline))
+    # Build as [item_dict, claim_dict] pairs so template can unpack: for item, claim in claimed_items
+    claimed_items = []
+    for c in raw:
+        item = c['item_data']
+        item['id'] = str(item['_id'])
+        claimed_items.append([item, c])
+
+    return render_template('profile.html', claimed_items=claimed_items, user_items=user_items)
 
 @app.route('/update_profile', methods=['GET', 'POST'])
 @login_required
