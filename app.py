@@ -17,12 +17,13 @@ app.config['SECURITY_PASSWORD_SALT'] = os.environ.get('SECURITY_PASSWORD_SALT', 
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb+srv://kishan9798760468_db_user:joGeYTKH1bfd9neF@cluster0.nro9z2t.mongodb.net/lost_found_db?appName=Cluster0')
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 465))
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'shashishe2160@gmail.com')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'bbctalfofplhhkea')
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_TIMEOUT'] = 10
 
 mongo = PyMongo(app)
 mail = Mail(app)
@@ -72,9 +73,10 @@ def send_otp_reg(email, otp):
     msg.html = f'<div style="font-family:Arial;color:#333"><h2 style="color:#004085">LOST-FOUND Management Team</h2><p>Your OTP: <strong style="font-size:18px;color:#007bff">{otp}</strong></p><p style="color:#6c757d">If you did not request this, ignore this email.</p></div>'
     try:
         mail.send(msg)
+        return True
     except Exception as e:
         print(f"Failed to send email: {e}")
-        flash('Failed to send OTP. Please try again later.', 'danger')
+        return False
 
 def send_otp_forget_pass(email, otp):
     msg = Message('Password Reset OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[email])
@@ -114,8 +116,11 @@ def register():
             'batch': batch, 'course': course, 'branch': branch,
             'otp': otp, 'otp_generated_at': datetime.utcnow().isoformat()
         }
-        send_otp_reg(email, otp)
-        flash('An OTP has been sent to your email. Please verify to complete registration.', 'info')
+        email_sent = send_otp_reg(email, otp)
+        if email_sent:
+            flash('An OTP has been sent to your email. Please verify to complete registration.', 'info')
+        else:
+            flash(f'⚠️ Email could not be delivered. Your OTP is: {otp} — Enter it below to complete registration.', 'warning')
         return redirect(url_for('verify_registration'))
     return render_template('register.html')
 
