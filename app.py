@@ -8,7 +8,7 @@ from bson.errors import InvalidId
 import random
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
-import resend
+import requests
 from models import User, ItemStatusEnum, CourseEnum, BranchEnum
 
 app = Flask(__name__)
@@ -17,9 +17,10 @@ app.config['SECURITY_PASSWORD_SALT'] = os.environ.get('SECURITY_PASSWORD_SALT', 
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb+srv://kishan9798760468_db_user:joGeYTKH1bfd9neF@cluster0.nro9z2t.mongodb.net/lost_found_db?appName=Cluster0')
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
-# Resend API key — set RESEND_API_KEY env var on Render
-resend.api_key = os.environ.get('RESEND_API_KEY', 're_KnsbyW3t_ERF9txWhNyGUsmr3USY8LpFF')
-REND_FROM_EMAIL = os.environ.get('MAIL_FROM', 'onboarding@resend.dev')
+# Brevo (Sendinblue) API — 300 free emails/day to ANY email, no domain needed
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
+BREVO_FROM_EMAIL = os.environ.get('BREVO_FROM_EMAIL', 'shashishe2160@gmail.com')
+BREVO_FROM_NAME = 'Smart Lost & Found'
 
 mongo = PyMongo(app)
 bcrypt = Bcrypt(app)
@@ -64,20 +65,33 @@ def generate_otp():
     return f"{random.randint(100000, 999999)}"
 
 def _send_email(to_email, subject, html_body):
-    """Send email via Resend HTTP API. Returns True on success, False on failure."""
-    if not resend.api_key:
-        print("RESEND_API_KEY not set — skipping email")
+    """Send email via Brevo HTTP API. Returns True on success, False on failure."""
+    if not BREVO_API_KEY:
+        print("BREVO_API_KEY not set — skipping email")
         return False
     try:
-        resend.Emails.send({
-            'from': REND_FROM_EMAIL,
-            'to': [to_email],
-            'subject': subject,
-            'html': html_body
-        })
-        return True
+        response = requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={
+                'api-key': BREVO_API_KEY,
+                'Content-Type': 'application/json'
+            },
+            json={
+                'sender': {'name': BREVO_FROM_NAME, 'email': BREVO_FROM_EMAIL},
+                'to': [{'email': to_email}],
+                'subject': subject,
+                'htmlContent': html_body
+            },
+            timeout=10
+        )
+        if response.status_code in (200, 201):
+            print(f"Email sent to {to_email} via Brevo")
+            return True
+        else:
+            print(f"Brevo error {response.status_code}: {response.text}")
+            return False
     except Exception as e:
-        print(f"Failed to send email via Resend: {e}")
+        print(f"Failed to send email via Brevo: {e}")
         return False
 
 def send_otp_reg(email, otp):
