@@ -46,8 +46,9 @@ def get_item_or_404(item_id):
     return item
 
 def enrich_item(item):
-    """Add id, category{name}, and owner{} fields to an item dict for template use."""
+    """Add id, category{name}, owner{} fields and normalize status to lowercase."""
     item['id'] = str(item['_id'])
+    item['status'] = (item.get('status') or '').lower()  # normalize LOST→lost, FOUND→found
     # Category lookup
     cid = item.get('category_id', '')
     if cid:
@@ -322,7 +323,8 @@ def home_page():
     if category_id:
         query['category_id'] = category_id
     if status_filter in ('lost', 'found'):
-        query['status'] = status_filter
+        # Case-insensitive match to handle both 'LOST'/'lost' already in DB
+        query['status'] = {'$regex': f'^{status_filter}$', '$options': 'i'}
 
     total = mongo.db.items.count_documents(query)
     items_cursor = (mongo.db.items.find(query)
@@ -348,9 +350,10 @@ def home_page():
         except Exception:
             pass
 
-    # Enrich each item with id, category object, and owner object
+    # Enrich each item with id, category object, owner object, and normalize status
     for item in items:
         item['id'] = str(item['_id'])
+        item['status'] = (item.get('status') or '').lower()  # normalize LOST→lost, FOUND→found
         cid = item.get('category_id', '')
         item['category'] = {'name': cat_map[cid]} if cid and cid in cat_map else None
         uid = item.get('user_id', '')
@@ -390,7 +393,7 @@ def add_item():
         name        = request.form.get('name', '').strip()
         description = request.form.get('description', '').strip()
         category_id = request.form.get('category', '')
-        status      = request.form.get('status')
+        status      = request.form.get('status', '').lower()  # normalize: "LOST"→"lost", "FOUND"→"found"
         date_str    = request.form.get('date')
         location    = request.form.get('location', '').strip()
         image       = request.files.get('image')
