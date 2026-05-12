@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}{{ item.name }} — Item Details{% endblock %}
+
+{% block head %}
+<style>
+.detail-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:2rem; align-items:start; }
+.detail-img-wrap { position:relative; border-radius:20px; overflow:hidden; border:1px solid rgba(255,255,255,.07); box-shadow:0 16px 48px rgba(0,0,0,.5); }
+.detail-img-wrap img { width:100%; height:360px; object-fit:cover; display:block; border-radius:20px; margin:0; }
+.detail-panel { background:rgba(15,25,50,.78); border:1px solid rgba(108,99,255,.15); border-radius:22px; backdrop-filter:blur(20px); padding:2.2rem; box-shadow:0 16px 48px rgba(0,0,0,.35); }
+.detail-item-name { font-family:'Outfit',sans-serif; font-size:1.9rem; font-weight:800; color:var(--text-primary)!important; background:none!important; -webkit-text-fill-color:var(--text-primary)!important; margin-bottom:.75rem; line-height:1.2; }
+.detail-badge { display:inline-flex; align-items:center; gap:.4rem; border-radius:50px; padding:.3rem .9rem; font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:1.5rem; }
+.detail-badge.lost { background:rgba(255,95,109,.15); border:1px solid rgba(255,95,109,.35); color:#ff8a93; }
+.detail-badge.found { background:rgba(48,213,200,.13); border:1px solid rgba(48,213,200,.35); color:var(--accent-teal); }
+.detail-badge.claimed { background:rgba(240,192,96,.12); border:1px solid rgba(240,192,96,.3); color:var(--accent-gold); }
+.detail-separator { height:1px; background:rgba(255,255,255,.06); margin:1.2rem 0; }
+.detail-row { display:flex; align-items:flex-start; gap:.75rem; margin-bottom:.9rem; }
+.detail-row .d-icon { width:34px; height:34px; background:rgba(108,99,255,.12); border:1px solid rgba(108,99,255,.2); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.8rem; color:var(--accent-primary); flex-shrink:0; margin-top:.1rem; }
+.detail-row .d-key { font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted); font-weight:600; line-height:1; margin-bottom:.25rem; }
+.detail-row .d-val { color:var(--text-primary); font-size:.95rem; font-weight:500; line-height:1.5; }
+.action-btns { display:flex; gap:.75rem; flex-wrap:wrap; margin-top:1.75rem; }
+.action-btns a { flex:1; text-align:center; min-width:120px; padding:.7rem 1rem; border-radius:10px!important; font-weight:600; font-size:.875rem; }
+
+/* ── CLAIM SECTION ── */
+.claim-section { margin: 0.5rem 0 1rem; }
+.claim-info { background:rgba(108,99,255,.07); border:1px solid rgba(108,99,255,.2); border-radius:14px; padding:1.1rem 1.25rem; display:flex; flex-direction:column; gap:.9rem; }
+.claim-info-text { color:var(--text-secondary); font-size:.875rem; line-height:1.55; }
+.btn-claim { width:100%; padding:.75rem 1.25rem; background:linear-gradient(135deg,#6c63ff,#4f46e5); color:#fff; border:none; border-radius:10px; font-weight:700; font-size:.9rem; cursor:pointer; transition:all .25s; display:flex; align-items:center; justify-content:center; gap:.5rem; box-shadow:0 4px 16px rgba(108,99,255,.4); font-family:'Inter',sans-serif; }
+.btn-claim:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(108,99,255,.55); }
+.btn-claim::after { display:none; }
+.claimed-badge { background:rgba(240,192,96,.1); border:1px solid rgba(240,192,96,.3); border-radius:12px; padding:1rem 1.25rem; color:var(--accent-gold); font-weight:600; font-size:.9rem; display:flex; align-items:center; gap:.5rem; }
+
+.btn-resolve { padding:.75rem 1rem; background:linear-gradient(135deg,#30d5c8,#1a9990); color:#fff; border:none; border-radius:10px; font-weight:700; font-size:.85rem; cursor:pointer; transition:all .25s; display:flex; align-items:center; justify-content:center; gap:.4rem; font-family:'Inter',sans-serif; box-shadow:0 4px 16px rgba(48,213,200,.35); }
+.btn-resolve:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(48,213,200,.5); }
+.btn-resolve::after { display:none; }
+.resolved-banner { background:rgba(48,213,200,.1); border:1px solid rgba(48,213,200,.3); border-radius:12px; padding:.9rem 1.2rem; color:var(--accent-teal); font-weight:600; font-size:.875rem; display:flex; align-items:center; width:100%; }
+
+@media(max-width:768px) { .detail-grid { grid-template-columns:1fr; } .detail-img-wrap img { height:220px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1.5rem;">
+    <a href="{{ url_for('home_page') }}" style="color:var(--text-muted); font-size:.875rem; font-weight:500;">
+        <i class="fas fa-arrow-left mr-1"></i> Back to listings
+    </a>
+</div>
+
+<div class="detail-grid">
+    <!-- Image -->
+    <div class="detail-img-wrap">
+        <img src="{{ url_for('static', filename='images/' + item.image_file) }}" alt="{{ item.name }}">
+    </div>
+
+    <!-- Info Panel -->
+    <div class="detail-panel">
+        <h1 class="detail-item-name">{{ item.name }}</h1>
+
+        {% if item.status %}
+        <span class="detail-badge {{ item.status|lower }}">
+            {% if item.status|lower == 'lost' %}
+                <i class="fas fa-exclamation-triangle"></i> Lost
+            {% else %}
+                <i class="fas fa-check-circle"></i> Found
+            {% endif %}
+        </span>
+        {% endif %}
+
+        {% if item.claimed %}
+        <span class="detail-badge claimed ml-1">
+            <i class="fas fa-handshake"></i> Claimed
+        </span>
+        {% endif %}
+
+        <div class="detail-separator"></div>
+
+        <div class="detail-row">
+            <div class="d-icon"><i class="fas fa-align-left"></i></div>
+            <div>
+                <div class="d-key">Description</div>
+                <div class="d-val">{{ item.description }}</div>
+            </div>
+        </div>
+
+        {% if item.category %}
+        <div class="detail-row">
+            <div class="d-icon"><i class="fas fa-tag"></i></div>
+            <div>
+                <div class="d-key">Category</div>
+                <div class="d-val">{{ item.category.name }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="detail-row">
+            <div class="d-icon"><i class="fas fa-calendar-alt"></i></div>
+            <div>
+                <div class="d-key">Date Lost / Found</div>
+                <div class="d-val">{{ item.date.strftime('%d %B %Y') }}</div>
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="d-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+                <div class="d-key">Location</div>
+                <div class="d-val">{{ item.location or 'Not specified' }}</div>
+            </div>
+        </div>
+
+        {% if item.owner %}
+        <div class="detail-row">
+            <div class="d-icon"><i class="fas fa-user"></i></div>
+            <div>
+                <div class="d-key">Reported By</div>
+                <div class="d-val" style="display:flex; align-items:center; gap:.6rem;">
+                    <img src="{{ url_for('static', filename='images/' + (item.owner.profile_pic if item.owner.profile_pic and item.owner.profile_pic != 'None' else 'default.jpg')) }}"
+                         alt="" width="26" height="26"
+                         style="border-radius:50%; object-fit:cover; border:1px solid rgba(108,99,255,.35);"
+                         onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'">
+                    {{ item.owner.first_name }} {{ item.owner.last_name }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="detail-separator"></div>
+
+        <!-- ── SECTION FOR NON-OWNERS (claimers) ── -->
+        {% if current_user.is_authenticated and current_user.id != item.user_id %}
+        <div class="claim-section">
+
+            {% if item.resolved %}
+            <!-- Already fully resolved -->
+            <div class="resolved-banner">
+                <i class="fas fa-check-circle mr-2"></i>
+                This case is <strong>Closed &amp; Resolved</strong> — item has been returned.
+            </div>
+
+            {% elif item.claimed %}
+            <!-- Claimed but not yet resolved -->
+            <div class="claimed-badge">
+                {% if item.status == 'lost' %}
+                    <i class="fas fa-search-location mr-2"></i>
+                    Someone has already reported finding this item. Awaiting resolution.
+                {% else %}
+                    <i class="fas fa-handshake mr-2"></i>
+                    The owner of this item has already come forward. Awaiting resolution.
+                {% endif %}
+            </div>
+
+            {% else %}
+            <!-- Open — can be claimed -->
+            <div class="claim-info">
+                {% if item.status == 'lost' %}
+                <!-- LOST item → finder clicks this -->
+                <div class="claim-info-text">
+                    <i class="fas fa-search mr-1" style="color:var(--accent-teal);"></i>
+                    <strong>Did you find this item?</strong> Let the owner know — they'll contact you directly to arrange return.
+                </div>
+                <form method="POST" action="{{ url_for('claim_item', item_id=item.id) }}"
+                      onsubmit="return confirm('Confirm: You found this item and want to notify the owner?');">
+                    <button type="submit" class="btn-claim" style="background:linear-gradient(135deg,#30d5c8,#1a9990); box-shadow:0 4px 16px rgba(48,213,200,.4);">
+                        <i class="fas fa-hand-holding mr-2"></i> I Found This Item
+                    </button>
+                </form>
+                {% else %}
+                <!-- FOUND item → original owner (loser) clicks this -->
+                <div class="claim-info-text">
+                    <i class="fas fa-tag mr-1" style="color:var(--accent-primary);"></i>
+                    <strong>Is this yours?</strong> Claim it and the person who found it will contact you to return it.
+                </div>
+                <form method="POST" action="{{ url_for('claim_item', item_id=item.id) }}"
+                      onsubmit="return confirm('Confirm: This item belongs to you and you want to claim it?');">
+                    <button type="submit" class="btn-claim">
+                        <i class="fas fa-user-check mr-2"></i> This Belongs To Me
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+        {% endif %}
+
+        <!-- ── NOT LOGGED IN MESSAGE ── -->
+        {% if not current_user.is_authenticated %}
+        <div class="claim-info" style="margin-top:.5rem;">
+            <div class="claim-info-text">
+                <i class="fas fa-lock mr-1" style="color:var(--accent-primary);"></i>
+                <a href="{{ url_for('login') }}" style="color:var(--accent-primary); font-weight:700;">Log in</a>
+                to
+                {% if item.status == 'lost' %}report that you found this item.
+                {% else %}claim this as your lost item.{% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ── OWNER PANEL ── -->
+        {% if current_user.is_authenticated and current_user.id == item.user_id %}
+        <div class="action-btns">
+            {% if not item.resolved %}
+
+            <!-- Who claimed / found it — show to owner -->
+            {% if item.claimed and claimer %}
+            <div style="width:100%; background:rgba(48,213,200,.07); border:1px solid rgba(48,213,200,.2); border-radius:14px; padding:1rem 1.25rem; margin-bottom:.75rem;">
+                <div style="font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; color:var(--accent-teal); font-weight:700; margin-bottom:.65rem;">
+                    {% if item.status == 'lost' %}
+                        <i class="fas fa-search-location mr-1"></i> Found By
+                    {% else %}
+                        <i class="fas fa-user-tag mr-1"></i> Claimed By
+                    {% endif %}
+                </div>
+                <div style="display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;">
+                    <img src="{{ url_for('static', filename='images/' + (claimer.profile_pic if claimer.profile_pic and claimer.profile_pic != 'None' else 'default.jpg')) }}"
+                         width="38" height="38"
+                         style="border-radius:50%; object-fit:cover; border:2px solid rgba(48,213,200,.4);"
+                         onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'">
+                    <div>
+                        <div style="font-weight:700; color:var(--text-primary); font-size:.95rem;">
+                            {{ claimer.first_name }} {{ claimer.last_name }}
+                        </div>
+                        <a href="mailto:{{ claimer.email }}"
+                           style="color:var(--accent-teal); font-size:.82rem; font-weight:600;">
+                            <i class="fas fa-envelope mr-1"></i>{{ claimer.email }}
+                        </a>
+                    </div>
+                    <span style="background:rgba(48,213,200,.12); border:1px solid rgba(48,213,200,.3); color:var(--accent-teal); border-radius:50px; padding:.15rem .7rem; font-size:.7rem; font-weight:700; margin-left:auto;">
+                        {% if item.status == 'lost' %}Found It{% else %}Owner{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+
+            <a href="{{ url_for('edit_item', item_id=item.id) }}" class="btn btn-secondary">
+                <i class="fas fa-edit mr-1"></i> Edit
+            </a>
+            <a href="{{ url_for('confirm_delete', item_id=item.id) }}" class="btn btn-danger"
+               style="flex:1; min-width:100px; text-align:center;">
+                <i class="fas fa-trash-alt mr-1"></i> Delete
+            </a>
+            {% if item.claimed %}
+            <form method="POST" action="{{ url_for('resolve_item', item_id=item.id) }}"
+                  style="flex:1; min-width:140px;"
+                  onsubmit="return confirm('Mark as returned & resolved? This cannot be undone.');">
+                <button type="submit" class="btn-resolve" style="width:100%;">
+                    <i class="fas fa-check-double mr-1"></i> Mark Resolved
+                </button>
+            </form>
+            {% endif %}
+
+            {% else %}
+            <!-- Already resolved -->
+            <div class="resolved-banner" style="width:100%;">
+                <i class="fas fa-check-circle mr-2"></i>
+                You marked this as <strong>Returned &amp; Resolved</strong>
+                {% if claimer %} — returned to/from {{ claimer.first_name }}{% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

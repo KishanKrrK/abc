@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block head %}
+<style>
+.page-header { display:flex; align-items:center; gap:1rem; margin-bottom:2rem; }
+.page-icon { width:52px; height:52px; background:linear-gradient(135deg,rgba(108,99,255,.25),rgba(48,213,200,.1)); border:1px solid rgba(108,99,255,.3); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+.page-header h1 { font-family:'Outfit',sans-serif; font-size:1.8rem; font-weight:800; color:var(--text-primary)!important; background:none!important; -webkit-text-fill-color:var(--text-primary)!important; margin:0; }
+.page-header p { color:var(--text-muted); font-size:.85rem; margin:.2rem 0 0; }
+.glass-form { background:rgba(15,25,50,.75); border:1px solid rgba(108,99,255,.15); border-radius:24px; backdrop-filter:blur(20px); padding:2.5rem; box-shadow:0 16px 48px rgba(0,0,0,.4); }
+.form-section-label { font-size:.7rem; font-weight:700; color:var(--accent-primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:1.2rem; padding-bottom:.5rem; border-bottom:1px solid rgba(108,99,255,.15); }
+.form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0 1.25rem; }
+.current-pic-wrap { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; }
+.current-pic-wrap img { width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid rgba(108,99,255,.4); }
+.current-pic-wrap .pic-info { color:var(--text-muted); font-size:.8rem; }
+.current-pic-wrap .pic-info strong { display:block; color:var(--text-secondary); font-size:.875rem; font-weight:600; margin-bottom:.2rem; }
+.file-upload-zone { border:2px dashed rgba(108,99,255,.35); border-radius:14px; padding:1.5rem; text-align:center; background:rgba(108,99,255,.04); cursor:pointer; transition:all .25s; position:relative; }
+.file-upload-zone:hover { border-color:var(--accent-primary); background:rgba(108,99,255,.08); }
+.file-upload-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; border:none!important; background:none!important; padding:0!important; }
+.form-btn-group { display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.5rem; }
+.form-btn-group .btn { flex:1; min-width:140px; }
+@media(max-width:600px) { .form-row-2 { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-icon">👤</div>
+    <div>
+        <h1>Edit Profile</h1>
+        <p>Update your personal information</p>
+    </div>
+</div>
+
+<div class="glass-form">
+    <form method="POST" action="{{ url_for('update_profile') }}"
+          enctype="multipart/form-data" id="editProfileForm">
+
+        <!-- Personal Info -->
+        <div class="form-section-label"><i class="fas fa-user mr-1"></i> Personal Information</div>
+
+        <div class="form-row-2">
+            <div class="form-group">
+                <label for="first_name"><i class="fas fa-user mr-1" style="color:var(--accent-primary);"></i> First Name</label>
+                <input type="text" class="form-control" id="first_name" name="first_name"
+                       value="{{ current_user.first_name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="last_name"><i class="fas fa-user mr-1" style="color:var(--accent-primary);"></i> Last Name</label>
+                <input type="text" class="form-control" id="last_name" name="last_name"
+                       value="{{ current_user.last_name }}" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="roll_number"><i class="fas fa-id-card mr-1" style="color:var(--accent-primary);"></i> Roll Number</label>
+            <input type="text" class="form-control" id="roll_number" name="roll_number"
+                   value="{{ current_user.roll_number }}" required>
+        </div>
+
+        <!-- Academic Info -->
+        <div class="form-section-label mt-2"><i class="fas fa-graduation-cap mr-1"></i> Academic Details</div>
+
+        <div class="form-row-2">
+            <div class="form-group">
+                <label for="batch"><i class="fas fa-calendar-alt mr-1" style="color:var(--accent-primary);"></i> Batch Year</label>
+                <select class="form-control" id="batch" name="batch" required>
+                    {% for year in range(2020, 2031) %}
+                    <option value="{{ year }}" {% if current_user.batch == year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="course"><i class="fas fa-graduation-cap mr-1" style="color:var(--accent-primary);"></i> Course</label>
+                <select class="form-control" id="course" name="course" required>
+                    <option value="Btech" {% if current_user.course == 'Btech' %}selected{% endif %}>Btech</option>
+                    <option value="Barch" {% if current_user.course == 'Barch' %}selected{% endif %}>Barch</option>
+                    <option value="Mtech" {% if current_user.course == 'Mtech' %}selected{% endif %}>Mtech</option>
+                    <option value="Msc"   {% if current_user.course == 'Msc'   %}selected{% endif %}>Msc</option>
+                    <option value="PHD"   {% if current_user.course == 'PHD'   %}selected{% endif %}>PHD</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="branch"><i class="fas fa-code-branch mr-1" style="color:var(--accent-primary);"></i> Branch</label>
+            <select class="form-control" id="branch" name="branch" required>
+                <option value="CSE"   {% if current_user.branch == 'CSE'   %}selected{% endif %}>CSE</option>
+                <option value="ECE"   {% if current_user.branch == 'ECE'   %}selected{% endif %}>ECE</option>
+                <option value="EEE"   {% if current_user.branch == 'EEE'   %}selected{% endif %}>EEE</option>
+                <option value="ICE"   {% if current_user.branch == 'ICE'   %}selected{% endif %}>ICE</option>
+                <option value="Chem"  {% if current_user.branch == 'Chem'  %}selected{% endif %}>Chem</option>
+                <option value="Civil" {% if current_user.branch == 'Civil' %}selected{% endif %}>Civil</option>
+                <option value="MECH"  {% if current_user.branch == 'MECH'  %}selected{% endif %}>MECH</option>
+                <option value="Prod"  {% if current_user.branch == 'Prod'  %}selected{% endif %}>Prod</option>
+                <option value="Other" {% if current_user.branch == 'Other' %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+
+        <!-- Profile Picture -->
+        <div class="form-section-label mt-2"><i class="fas fa-camera mr-1"></i> Profile Picture</div>
+
+        {% if current_user.profile_pic %}
+        <div class="current-pic-wrap">
+            <img src="{{ url_for('static', filename='images/' + current_user.profile_pic) }}"
+                 alt="Current Profile Picture">
+            <div class="pic-info">
+                <strong>Current Photo</strong>
+                Upload a new one below to replace it
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <div class="file-upload-zone">
+                <input type="file" id="profile_pic" name="profile_pic"
+                       accept="image/*" onchange="updateFileName(this)">
+                <div style="font-size:1.5rem; margin-bottom:.4rem;">📸</div>
+                <div id="uploadLabel" style="color:var(--text-secondary); font-size:.875rem; font-weight:500;">
+                    Click to {% if current_user.profile_pic %}replace{% else %}upload{% endif %} photo
+                </div>
+                <div style="color:var(--text-muted); font-size:.75rem; margin-top:.3rem;">PNG, JPG — recommended 200×200px</div>
+            </div>
+        </div>
+
+        <div class="form-btn-group">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save mr-2"></i> Save Changes
+            </button>
+            <a href="{{ url_for('view_profile') }}" class="btn btn-secondary" style="text-align:center;">
+                <i class="fas fa-times mr-1"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateFileName(input) {
+    if (input.files && input.files[0]) {
+        document.getElementById('uploadLabel').textContent = '✅ ' + input.files[0].name;
+    }
+}
+</script>
+{% endblock %}

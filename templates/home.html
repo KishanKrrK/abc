@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Home — CampusLost&amp;Found{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home_new.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<div class="fw h-hero">
+  <div class="blob1"></div>
+  <div class="blob2"></div>
+  <div>
+    <h1>Lost Something<br><span class="grad">on Campus?</span><br>We'll Find It.</h1>
+    <div class="h-btns">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('add_item') }}" class="hb1">🔴 Report Lost Item</a>
+      <a href="{{ url_for('add_item') }}" class="hb2">🟠 Report Found Item</a>
+      {% else %}
+      <a href="{{ url_for('register') }}" class="hb1">🔴 Report Lost Item</a>
+      <a href="{{ url_for('register') }}" class="hb2">🟠 Report Found Item</a>
+      {% endif %}
+      <a href="#items-section" class="hb3">🔵 Search Items</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- RECENT ITEMS -->
+<div class="fw h-items" id="items-section">
+  <div style="text-align:center; margin-bottom:2rem;">
+    <div class="sec-pill">🔥 Latest Reports</div>
+    <div class="sec-title">Recent <span>Items</span></div>
+    <div class="sec-sub">Browse the latest lost and found reports from your campus.</div>
+  </div>
+
+  <!-- Filter Row -->
+  <form method="GET" action="{{ url_for('home_page') }}" style="max-width:1100px; margin:0 auto 2rem;">
+    <div class="filter-row">
+      <div class="ftabs">
+        <a href="/?search={{ search_term }}&category={{ category_id }}&status=" class="ftab {% if not status_filter %}on{% endif %}">All</a>
+        <a href="/?search={{ search_term }}&category={{ category_id }}&status=lost" class="ftab {% if status_filter=='lost' %}lost-on{% endif %}">Lost</a>
+        <a href="/?search={{ search_term }}&category={{ category_id }}&status=found" class="ftab {% if status_filter=='found' %}found-on{% endif %}">Found</a>
+      </div>
+      <div style="display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
+        <input type="text" name="search" value="{{ search_term }}" placeholder="Search…" style="background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:#fff; border-radius:10px; padding:.5rem 1rem; font-size:.82rem; outline:none; min-width:160px;">
+        <select name="category" style="background:#1a1a3e; border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.7); border-radius:10px; padding:.5rem 1rem; font-size:.82rem; outline:none;">
+          <option value="">All Categories</option>
+          {% for cat in categories %}<option value="{{ cat.id }}" {% if category_id==cat.id|string %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+        </select>
+        <button type="submit" style="background:linear-gradient(135deg,#6c63ff,#4f46e5); color:#fff; border:none; border-radius:10px; padding:.5rem 1.2rem; font-weight:700; font-size:.82rem; cursor:pointer;">Filter ▼</button>
+      </div>
+    </div>
+  </form>
+
+  {% if items %}
+  <div class="items-grid">
+    {% for item in items %}
+    <div class="icard">
+      <div class="img-w">
+        <img src="{{ url_for('static', filename='images/' + item.image_file) }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/default.jpg') }}'">
+        <div class="ov"></div>
+        <span class="stag {{ item.status|lower }}">{{ item.status }}</span>
+        <span class="new-tag">NEW</span>
+      </div>
+      <div class="body">
+        {% if item.category %}<div class="cat">{{ item.category.name }}</div>{% endif %}
+        <div class="name">{{ item.name }}</div>
+        <div class="desc">{{ item.description[:70] }}{% if item.description|length > 70 %}…{% endif %}</div>
+        <div class="foot">
+          <div class="ua">
+            {% if item.owner %}
+            <img src="{{ url_for('static', filename='images/' + (item.owner.profile_pic if item.owner.profile_pic and item.owner.profile_pic != 'None' else 'default.jpg')) }}" onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'">
+            <span>{{ item.owner.first_name }}</span>
+            {% endif %}
+          </div>
+          <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn-iv">View</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if pagination and pagination.pages > 1 %}
+  <div class="pg">
+    {% set base='/?search='~(search_term or '')~'&category='~(category_id or '')~'&status='~(status_filter or '') %}
+    {% if pagination.has_prev %}<a class="pgb" href="{{ base }}&page={{ pagination.prev_num }}"><i class="fas fa-chevron-left"></i></a>{% else %}<span class="pgb off"><i class="fas fa-chevron-left"></i></span>{% endif %}
+    {% for p in pagination.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}{% if p %}{% if p==pagination.page %}<span class="pgb on">{{ p }}</span>{% else %}<a class="pgb" href="{{ base }}&page={{ p }}">{{ p }}</a>{% endif %}{% else %}<span style="color:rgba(255,255,255,.3);padding:0 .25rem;">…</span>{% endif %}{% endfor %}
+    {% if pagination.has_next %}<a class="pgb" href="{{ base }}&page={{ pagination.next_num }}"><i class="fas fa-chevron-right"></i></a>{% else %}<span class="pgb off"><i class="fas fa-chevron-right"></i></span>{% endif %}
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="es">
+    <div class="ei">{% if status_filter=='lost' %}😟{% elif status_filter=='found' %}🎉{% elif search_term %}🔍{% else %}📭{% endif %}</div>
+    <p style="font-size:1.05rem; margin-bottom:1rem;">{% if search_term %}No results for "{{ search_term }}"{% elif status_filter %}No {{ status_filter }} items yet{% else %}No items reported yet{% endif %}</p>
+    <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;">
+      <a href="{{ url_for('home_page') }}" class="hb3" style="font-size:.85rem; padding:.55rem 1.2rem;">Clear Filters</a>
+      {% if current_user.is_authenticated %}<a href="{{ url_for('add_item') }}" class="hb1" style="font-size:.85rem; padding:.55rem 1.2rem;">Report Item</a>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="fw h-hiw">
+  <div style="text-align:center;">
+    <div class="sec-pill">⚙️ Simple Process</div>
+    <div class="sec-title">How <span>It Works</span></div>
+    <div class="sec-sub">Three simple steps to recover your lost item or help someone find theirs</div>
+    <div class="hiw-list">
+      <div class="hiw-row">
+        <div class="hiw-left"><div class="hiw-num">1</div><div class="hiw-line"></div></div>
+        <div class="hiw-card"><h4>📢 Report Your Item</h4><p>Submit a detailed report of your lost or found item with photos, description, and last known location.</p></div>
+      </div>
+      <div class="hiw-row">
+        <div class="hiw-left"><div class="hiw-num">2</div><div class="hiw-line"></div></div>
+        <div class="hiw-card"><h4>📅 Upload Photos &amp; Details</h4><p>Add clear images and specific details to help our system identify and match your item accurately.</p></div>
+      </div>
+      <div class="hiw-row">
+        <div class="hiw-left"><div class="hiw-num">3</div><div class="hiw-line" style="display:none;"></div></div>
+        <div class="hiw-card"><h4>✅ Verify &amp; Claim</h4><p>Verify your ownership through our secure claim process and reunite with your belongings safely.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<div class="fw h-test">
+  <div style="text-align:center;">
+    <div class="sec-pill">⭐ Student Reviews</div>
+    <div class="sec-title">What Students <span>Say</span></div>
+  </div>
+  <div class="test-grid">
+    <div class="tc"><div class="stars">★★★★★</div><p>"Found my laptop bag within 2 hours! The notification was instant and the person returned it same day."</p><div class="ta"><img src="{{ url_for('static', filename='images/default.jpg') }}"><div><div class="tn">Rahul Sharma</div><div class="ts">CSE · 2nd Year</div></div></div></div>
+    <div class="tc"><div class="stars">★★★★★</div><p>"I found someone's ID card near the library. Posted it and the owner claimed it within an hour!"</p><div class="ta"><img src="{{ url_for('static', filename='images/default.jpg') }}"><div><div class="tn">Priya Singh</div><div class="ts">ECE · 3rd Year</div></div></div></div>
+    <div class="tc"><div class="stars">★★★★★</div><p>"This platform saved me. Lost my wallet and found it back within a day. Absolutely incredible!"</p><div class="ta"><img src="{{ url_for('static', filename='images/default.jpg') }}"><div><div class="tn">Minas R. Piriton</div><div class="ts">MECH · 1st Year</div></div></div></div>
+    <div class="tc"><div class="stars">★★★★☆</div><p>"A student returned my calculator through this system. Really trustworthy platform on campus."</p><div class="ta"><img src="{{ url_for('static', filename='images/default.jpg') }}"><div><div class="tn">Sidhant Jain</div><div class="ts">Civil · 4th Year</div></div></div></div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="fw h-faq">
+  <div style="text-align:center;">
+    <div class="sec-pill">❓ Help</div>
+    <div class="sec-title">Frequently Asked <span>Questions</span></div>
+  </div>
+  <div class="faq-box">
+    <div class="faqr"><button class="faqq">Is my personal information safe?<i class="fas fa-chevron-down qi"></i></button><div class="faqa">Yes. Only verified college email users can access the platform. Your contact details are only shared with the other party when a claim is made.</div></div>
+    <div class="faqr"><button class="faqq">How do I claim a found item?<i class="fas fa-chevron-down qi"></i></button><div class="faqa">Browse the found items list, click on the item that belongs to you, and click "This Belongs To Me". The finder will be notified with your contact email.</div></div>
+    <div class="faqr"><button class="faqq">Can faculty members use this platform?<i class="fas fa-chevron-down qi"></i></button><div class="faqa">Currently the platform is designed for students with verified college email addresses. Faculty support is planned for a future update.</div></div>
+    <div class="faqr"><button class="faqq">What happens if no one claims a found item?<i class="fas fa-chevron-down qi"></i></button><div class="faqa">If an item is unclaimed after 30 days, it is recommended to hand it over to the campus security or lost-and-found office.</div></div>
+    <div class="faqr"><button class="faqq">Can I upload multiple images for an item?<i class="fas fa-chevron-down qi"></i></button><div class="faqa">Currently one primary image is supported per item. Multi-image support is on our roadmap for the next update.</div></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.faqq').forEach(function(b){
+  b.addEventListener('click',function(){
+    var a=this.nextElementSibling, op=a.classList.contains('sh');
+    document.querySelectorAll('.faqa').forEach(function(x){x.classList.remove('sh');});
+    document.querySelectorAll('.faqq').forEach(function(x){x.classList.remove('op');});
+    if(!op){a.classList.add('sh');this.classList.add('op');}
+  });
+});
+</script>
+{% endblock %}

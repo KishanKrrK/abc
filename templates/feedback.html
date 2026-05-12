@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Feedback{% endblock %}
+
+{% block head %}
+<style>
+.feedback-wrapper { min-height: calc(100vh - 160px); display:flex; align-items:flex-start; justify-content:center; padding: 2rem 0 3rem; }
+.feedback-layout { display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem; width: 100%; max-width: 900px; align-items: start; }
+
+/* Left — Info Panel */
+.feedback-info { background:rgba(15,25,50,.78); border:1px solid rgba(108,99,255,.15); border-radius:22px; backdrop-filter:blur(20px); padding:2.2rem; box-shadow:0 16px 48px rgba(0,0,0,.35); }
+.feedback-info-icon { font-size:2.8rem; margin-bottom:1rem; }
+.feedback-info h2 { font-family:'Outfit',sans-serif; font-size:1.6rem; font-weight:800; color:var(--text-primary)!important; background:none!important; -webkit-text-fill-color:var(--text-primary)!important; margin-bottom:.6rem; }
+.feedback-info p { color:var(--text-secondary); font-size:.875rem; line-height:1.65; margin-bottom:1.5rem; }
+.info-stat { display:flex; align-items:center; gap:.75rem; padding:.7rem 0; border-bottom:1px solid rgba(255,255,255,.05); }
+.info-stat:last-child { border-bottom:none; }
+.info-stat .i-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.info-stat .i-dot.purple { background:var(--accent-primary); box-shadow:0 0 8px rgba(108,99,255,.6); }
+.info-stat .i-dot.teal   { background:var(--accent-teal);    box-shadow:0 0 8px rgba(48,213,200,.5); }
+.info-stat .i-dot.gold   { background:var(--accent-gold);    box-shadow:0 0 8px rgba(240,192,96,.5); }
+.info-stat span { color:var(--text-secondary); font-size:.82rem; font-weight:500; }
+
+/* Right — Form */
+.feedback-form-card { background:rgba(15,25,50,.78); border:1px solid rgba(108,99,255,.15); border-radius:22px; backdrop-filter:blur(20px); padding:2.4rem; box-shadow:0 16px 48px rgba(0,0,0,.35); }
+.form-section-label { font-size:.7rem; font-weight:700; color:var(--accent-primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:1.2rem; padding-bottom:.5rem; border-bottom:1px solid rgba(108,99,255,.15); }
+.form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0 1.25rem; }
+
+/* Star Rating */
+.star-group { display:flex; gap:.4rem; flex-direction:row-reverse; justify-content:flex-end; }
+.star-group input { display:none; }
+.star-group label { font-size:1.8rem; cursor:pointer; color:rgba(255,255,255,.2); transition:color .2s, transform .2s; line-height:1; }
+.star-group label:hover,
+.star-group label:hover ~ label,
+.star-group input:checked ~ label { color:#f0c060; text-shadow:0 0 10px rgba(240,192,96,.5); }
+.star-group label:hover { transform:scale(1.15); }
+.star-rating-wrap { display:flex; flex-direction:column; gap:.5rem; }
+.star-rating-wrap small { color:var(--text-muted); font-size:.75rem; }
+
+/* Category chips */
+.category-chips { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.3rem; }
+.category-chips input[type="radio"] { display:none; }
+.category-chips label { padding:.4rem .9rem; border:1px solid rgba(255,255,255,.1); border-radius:50px; font-size:.78rem; font-weight:600; color:var(--text-secondary); cursor:pointer; transition:all .2s; text-transform:none; letter-spacing:normal; }
+.category-chips input:checked + label { background:rgba(108,99,255,.2); border-color:var(--accent-primary); color:var(--accent-primary); }
+.category-chips label:hover { border-color:rgba(108,99,255,.4); color:var(--text-primary); }
+
+@media(max-width:768px) { .feedback-layout { grid-template-columns:1fr; } .form-row-2 { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="feedback-wrapper">
+    <div class="feedback-layout">
+
+        <!-- Left Info -->
+        <div class="feedback-info">
+            <div class="feedback-info-icon">💬</div>
+            <h2>Share Your Experience</h2>
+            <p>Your feedback helps us make the Smart Lost &amp; Found system better for everyone on campus. Every response is read by our team.</p>
+
+            <div class="info-stat">
+                <div class="i-dot purple"></div>
+                <span>Takes less than 2 minutes</span>
+            </div>
+            <div class="info-stat">
+                <div class="i-dot teal"></div>
+                <span>Helps improve the platform for all students</span>
+            </div>
+            <div class="info-stat">
+                <div class="i-dot gold"></div>
+                <span>All feedback is reviewed by the team</span>
+            </div>
+            <div class="info-stat">
+                <div class="i-dot purple"></div>
+                <span>Anonymous submissions are welcome</span>
+            </div>
+        </div>
+
+        <!-- Right Form -->
+        <div class="feedback-form-card">
+            <form method="POST" action="{{ url_for('feedback') }}" id="feedbackForm">
+
+                <div class="form-section-label">
+                    <i class="fas fa-user mr-1"></i> Your Details
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="fb_name">
+                            <i class="fas fa-user mr-1" style="color:var(--accent-primary);"></i> Name
+                        </label>
+                        <input type="text" class="form-control" id="fb_name" name="name"
+                               placeholder="Your name"
+                               value="{{ current_user.first_name + ' ' + current_user.last_name if current_user.is_authenticated else '' }}"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fb_email">
+                            <i class="fas fa-envelope mr-1" style="color:var(--accent-primary);"></i> Email
+                        </label>
+                        <input type="email" class="form-control" id="fb_email" name="email"
+                               placeholder="your@email.com"
+                               value="{{ current_user.email if current_user.is_authenticated else '' }}"
+                               required>
+                    </div>
+                </div>
+
+                <div class="form-section-label mt-2">
+                    <i class="fas fa-star mr-1"></i> Rating &amp; Category
+                </div>
+
+                <div class="form-group">
+                    <label style="margin-bottom:.5rem;">
+                        How would you rate your experience?
+                    </label>
+                    <div class="star-rating-wrap">
+                        <div class="star-group" id="starGroup">
+                            <input type="radio" id="s5" name="rating" value="5" checked>
+                            <label for="s5" title="5 – Excellent">★</label>
+                            <input type="radio" id="s4" name="rating" value="4">
+                            <label for="s4" title="4 – Good">★</label>
+                            <input type="radio" id="s3" name="rating" value="3">
+                            <label for="s3" title="3 – Average">★</label>
+                            <input type="radio" id="s2" name="rating" value="2">
+                            <label for="s2" title="2 – Poor">★</label>
+                            <input type="radio" id="s1" name="rating" value="1">
+                            <label for="s1" title="1 – Terrible">★</label>
+                        </div>
+                        <small id="ratingLabel">Excellent — 5 stars</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Feedback Category</label>
+                    <div class="category-chips">
+                        <input type="radio" id="cat_general"  name="category" value="General"  checked>
+                        <label for="cat_general">💬 General</label>
+
+                        <input type="radio" id="cat_ui"       name="category" value="UI/UX">
+                        <label for="cat_ui">🎨 UI / UX</label>
+
+                        <input type="radio" id="cat_feature"  name="category" value="Feature Request">
+                        <label for="cat_feature">💡 Feature Request</label>
+
+                        <input type="radio" id="cat_bug"      name="category" value="Bug Report">
+                        <label for="cat_bug">🐛 Bug Report</label>
+
+                        <input type="radio" id="cat_search"   name="category" value="Search">
+                        <label for="cat_search">🔍 Search</label>
+
+                        <input type="radio" id="cat_other"    name="category" value="Other">
+                        <label for="cat_other">📝 Other</label>
+                    </div>
+                </div>
+
+                <div class="form-section-label mt-2">
+                    <i class="fas fa-comment-dots mr-1"></i> Your Message
+                </div>
+
+                <div class="form-group">
+                    <label for="fb_message">
+                        <i class="fas fa-pencil-alt mr-1" style="color:var(--accent-primary);"></i> Message
+                    </label>
+                    <textarea class="form-control" id="fb_message" name="message" rows="5"
+                              placeholder="Tell us what you loved, what could be improved, or report any issues…"
+                              required maxlength="1000" oninput="updateCount(this)"></textarea>
+                    <div style="text-align:right; margin-top:.3rem;">
+                        <small id="charCount" style="color:var(--text-muted);">0 / 1000</small>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="fbSubmitBtn">
+                    <i class="fas fa-paper-plane mr-2"></i> Submit Feedback
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// Star rating labels
+const ratingLabels = {
+    '1': 'Terrible — 1 star',
+    '2': 'Poor — 2 stars',
+    '3': 'Average — 3 stars',
+    '4': 'Good — 4 stars',
+    '5': 'Excellent — 5 stars'
+};
+document.querySelectorAll('input[name="rating"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        document.getElementById('ratingLabel').textContent = ratingLabels[this.value];
+    });
+});
+
+// Character counter
+function updateCount(el) {
+    document.getElementById('charCount').textContent = el.value.length + ' / 1000';
+}
+</script>
+{% endblock %}

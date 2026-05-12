@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Confirm Delete{% endblock %}
+
+{% block head %}
+<style>
+.confirm-wrap { max-width:520px; margin:4rem auto; }
+.confirm-card { background:rgba(15,25,50,.82); border:1px solid rgba(255,95,109,.2); border-radius:22px; backdrop-filter:blur(20px); padding:2.4rem; box-shadow:0 16px 48px rgba(0,0,0,.45); text-align:center; }
+.confirm-icon { font-size:3.5rem; margin-bottom:1.25rem; }
+.confirm-card h2 { font-family:'Outfit',sans-serif; font-size:1.55rem; font-weight:800; color:var(--text-primary)!important; -webkit-text-fill-color:var(--text-primary)!important; background:none!important; margin-bottom:.5rem; }
+.confirm-card p { color:var(--text-secondary); font-size:.9rem; line-height:1.65; margin-bottom:.5rem; }
+.item-name-highlight { display:inline-block; background:rgba(255,95,109,.1); border:1px solid rgba(255,95,109,.25); color:#ff8a93; border-radius:8px; padding:.2rem .75rem; font-weight:700; font-size:1rem; margin:.5rem 0 1.2rem; }
+.confirm-divider { height:1px; background:rgba(255,255,255,.06); margin:1.5rem 0; }
+.confirm-actions { display:flex; gap:.75rem; }
+.btn-cancel { flex:1; padding:.8rem; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:var(--text-secondary); border-radius:12px; font-weight:600; font-size:.9rem; text-align:center; text-decoration:none; transition:all .2s; }
+.btn-cancel:hover { background:rgba(255,255,255,.1); color:var(--text-primary); text-decoration:none; }
+.btn-delete-confirm { flex:1; padding:.8rem; background:linear-gradient(135deg,#ff5f6d,#cc3344); color:#fff; border:none; border-radius:12px; font-weight:700; font-size:.9rem; cursor:pointer; transition:all .25s; box-shadow:0 4px 16px rgba(255,95,109,.35); font-family:'Inter',sans-serif; }
+.btn-delete-confirm:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(255,95,109,.5); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirm-wrap">
+    <div class="confirm-card">
+        <div class="confirm-icon">🗑️</div>
+        <h2>Delete Item?</h2>
+        <p>You are about to permanently delete:</p>
+        <div class="item-name-highlight">{{ item.name }}</div>
+        <p style="color:var(--text-muted); font-size:.82rem;">
+            This action <strong style="color:#ff8a93;">cannot be undone.</strong>
+            All associated data including claims will be removed.
+        </p>
+
+        <div class="confirm-divider"></div>
+
+        <!-- Item preview mini -->
+        <div style="display:flex; align-items:center; gap:.85rem; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:.75rem 1rem; margin-bottom:1.5rem; text-align:left;">
+            <img src="{{ url_for('static', filename='images/' + item.image_file) }}"
+                 alt="{{ item.name }}" width="52" height="52"
+                 style="border-radius:10px; object-fit:cover; flex-shrink:0; border:1px solid rgba(255,255,255,.1);"
+                 onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'">
+            <div>
+                <div style="font-weight:700; color:var(--text-primary); font-size:.95rem;">{{ item.name }}</div>
+                <div style="font-size:.78rem; color:var(--text-muted); margin-top:.15rem;">
+                    <span style="background:rgba(108,99,255,.12); color:var(--accent-primary); border-radius:4px; padding:.1rem .4rem; font-size:.7rem; font-weight:700; text-transform:uppercase;">{{ item.status }}</span>
+                    {% if item.category %} · {{ item.category.name }}{% endif %}
+                    · {{ item.date.strftime('%d %b %Y') }}
+                </div>
+            </div>
+        </div>
+
+        <div class="confirm-actions">
+            <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn-cancel">
+                <i class="fas fa-arrow-left mr-1"></i> Cancel
+            </a>
+            <form method="POST" action="{{ url_for('delete_item', item_id=item.id) }}" style="flex:1;">
+                <button type="submit" class="btn-delete-confirm" style="width:100%;">
+                    <i class="fas fa-trash-alt mr-2"></i> Yes, Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

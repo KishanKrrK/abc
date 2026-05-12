@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Verify Email{% endblock %}
+
+{% block head %}
+<style>
+.auth-wrapper { min-height:calc(100vh - 140px); display:flex; align-items:center; justify-content:center; padding:2rem 0; }
+.auth-card { width:100%; max-width:460px; background:rgba(15,25,50,.82); border:1px solid rgba(108,99,255,.18); border-radius:24px; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); box-shadow:0 24px 64px rgba(0,0,0,.5),0 4px 16px rgba(108,99,255,.1); overflow:hidden; }
+.auth-card-header { padding:2.5rem 2.5rem 1.5rem; text-align:center; border-bottom:1px solid rgba(255,255,255,.05); }
+.auth-icon { width:68px; height:68px; background:linear-gradient(135deg,rgba(48,213,200,.2),rgba(108,99,255,.1)); border:1px solid rgba(48,213,200,.3); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:1.6rem; margin-bottom:1rem; box-shadow:0 0 24px rgba(48,213,200,.2); }
+.auth-title { font-family:'Outfit',sans-serif; font-size:1.75rem; font-weight:800; color:var(--text-primary)!important; background:none!important; -webkit-text-fill-color:var(--text-primary)!important; margin-bottom:.4rem; }
+.auth-subtitle { color:var(--text-muted); font-size:.875rem; margin:0; }
+.auth-body { padding:2rem 2.5rem 2.5rem; }
+.otp-field { text-align:center; font-size:2rem; font-weight:800; letter-spacing:.75rem; color:var(--accent-primary)!important; background:rgba(108,99,255,.06)!important; border-color:rgba(108,99,255,.3)!important; border-radius:14px!important; padding:1rem!important; height:70px; }
+.otp-field:focus { border-color:var(--accent-primary)!important; box-shadow:0 0 0 3px rgba(108,99,255,.25)!important; }
+.step-indicator { display:flex; justify-content:center; gap:.5rem; margin-bottom:1.5rem; }
+.step-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.15); }
+.step-dot.active { background:var(--accent-teal); box-shadow:0 0 8px rgba(48,213,200,.5); }
+.step-dot.done { background:var(--accent-primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-card-header">
+            <div class="auth-icon">✉️</div>
+            <h2 class="auth-title">Verify Your Email</h2>
+            <p class="auth-subtitle">Enter the 6-digit OTP sent to your inbox</p>
+        </div>
+        <div class="auth-body">
+            <div class="step-indicator">
+                <div class="step-dot done"></div>
+                <div class="step-dot done"></div>
+                <div class="step-dot active"></div>
+            </div>
+
+            <form method="POST" action="{{ url_for('verify_registration') }}"
+                  onsubmit="return validateOTP()" id="verifyForm">
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                    <label for="otp" style="text-align:center; display:block; margin-bottom:.75rem;">
+                        <i class="fas fa-shield-alt mr-1" style="color:var(--accent-teal);"></i>
+                        One-Time Password
+                    </label>
+                    <input type="text" class="form-control otp-field" id="otp"
+                           name="otp" placeholder="••••••" maxlength="6"
+                           inputmode="numeric" autocomplete="one-time-code" required>
+                    <small style="text-align:center; display:block; margin-top:.5rem;">
+                        Check your college email for the code
+                    </small>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check-circle mr-2"></i> Verify &amp; Continue
+                </button>
+            </form>
+
+            {% if error %}
+            <div class="alert alert-danger mt-3">
+                <i class="fas fa-exclamation-circle mr-2"></i>{{ error }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function validateOTP() {
+    const otp = document.getElementById("otp").value;
+    if (!/^\d{6}$/.test(otp)) {
+        alert("Please enter a valid 6-digit OTP.");
+        return false;
+    }
+    return true;
+}
+// Auto-advance: only allow digits
+document.getElementById('otp').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g,'').slice(0,6);
+});
+</script>
+{% endblock %}

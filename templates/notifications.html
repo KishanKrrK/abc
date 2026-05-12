@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+
+{% block head %}
+<style>
+/* ── Page layout ── */
+.notif-page { max-width: 720px; margin: 0 auto; padding: 2rem 0 3rem; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+.page-header-left { display:flex; align-items:center; gap:1rem; }
+.page-icon { width:52px; height:52px; background:linear-gradient(135deg,rgba(108,99,255,.25),rgba(48,213,200,.1)); border:1px solid rgba(108,99,255,.3); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+.page-header h1 { font-family:'Outfit',sans-serif; font-size:1.7rem; font-weight:800; color:var(--text-primary)!important; background:none!important; -webkit-text-fill-color:var(--text-primary)!important; margin:0; }
+.page-header p { color:var(--text-muted); font-size:.82rem; margin:.15rem 0 0; }
+.notif-count-chip { background:rgba(108,99,255,.12); border:1px solid rgba(108,99,255,.25); color:var(--accent-primary); font-size:.75rem; font-weight:700; padding:.25rem .7rem; border-radius:50px; white-space:nowrap; }
+
+/* ── Notification card ── */
+.notif-list { display:flex; flex-direction:column; gap:.75rem; }
+.notif-card { background:rgba(15,25,50,.78); border:1px solid rgba(108,99,255,.13); border-radius:16px; backdrop-filter:blur(16px); padding:1.2rem 1.4rem; display:flex; align-items:flex-start; gap:1.1rem; transition:all .25s; position:relative; overflow:hidden; }
+.notif-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:linear-gradient(135deg,var(--accent-primary),var(--accent-teal)); border-radius:0 2px 2px 0; }
+.notif-card:hover { border-color:rgba(108,99,255,.3); transform:translateX(3px); box-shadow:0 8px 28px rgba(0,0,0,.3); }
+
+.notif-icon-wrap { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+.notif-icon-wrap.type-claim   { background:rgba(108,99,255,.15); color:var(--accent-primary); border:1px solid rgba(108,99,255,.25); }
+.notif-icon-wrap.type-found   { background:rgba(48,213,200,.12); color:var(--accent-teal);    border:1px solid rgba(48,213,200,.25); }
+.notif-icon-wrap.type-lost    { background:rgba(255,95,109,.12); color:#ff8a93;                border:1px solid rgba(255,95,109,.25); }
+.notif-icon-wrap.type-general { background:rgba(240,192,96,.1);  color:var(--accent-gold);    border:1px solid rgba(240,192,96,.2);  }
+
+.notif-body { flex:1; min-width:0; }
+.notif-message { color:var(--text-primary); font-size:.9rem; font-weight:500; line-height:1.55; margin:0 0 .35rem; }
+.notif-meta { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+.notif-time { color:var(--text-muted); font-size:.75rem; display:flex; align-items:center; gap:.3rem; }
+.notif-item-link { color:var(--accent-primary); font-size:.75rem; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:.3rem; transition:color .2s; }
+.notif-item-link:hover { color:var(--accent-teal); text-decoration:none; }
+
+/* ── Empty state ── */
+.empty-state { text-align:center; padding:4rem 2rem; }
+.empty-icon { font-size:4rem; margin-bottom:1.2rem; opacity:.4; }
+.empty-state h3 { font-family:'Outfit',sans-serif; font-weight:700; color:var(--text-secondary); font-size:1.3rem; margin-bottom:.5rem; }
+.empty-state p { color:var(--text-muted); font-size:.875rem; margin-bottom:1.5rem; }
+
+/* ── Divider ── */
+.notif-date-divider { display:flex; align-items:center; gap:.75rem; margin:.5rem 0; }
+.notif-date-divider span { color:var(--text-muted); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.8px; white-space:nowrap; }
+.notif-date-divider::before, .notif-date-divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.06); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notif-page">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <div class="page-icon">
+                <i class="fas fa-bell" style="color:var(--accent-primary);"></i>
+            </div>
+            <div>
+                <h1>Notifications</h1>
+                <p>Updates about your items and claims</p>
+            </div>
+        </div>
+        {% if notifications %}
+        <div class="notif-count-chip">
+            <i class="fas fa-inbox mr-1"></i> {{ notifications|length }} notification{{ 's' if notifications|length != 1 else '' }}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if notifications %}
+    <div class="notif-list">
+        {% set ns = namespace(last_date=none) %}
+        {% for notif in notifications %}
+
+            {# Date divider #}
+            {% set notif_date = notif.sent_at.strftime('%d %B %Y') %}
+            {% if notif_date != ns.last_date %}
+                {% set ns.last_date = notif_date %}
+                <div class="notif-date-divider">
+                    <span>
+                        {% if notif_date == now.strftime('%d %B %Y') %}
+                            Today
+                        {% else %}
+                            {{ notif_date }}
+                        {% endif %}
+                    </span>
+                </div>
+            {% endif %}
+
+            {# Detect type from message keyword for icon #}
+            {% if 'claim' in notif.message|lower %}
+                {% set icon_class = 'type-claim' %}
+                {% set icon_fa = 'fa-handshake' %}
+            {% elif 'found' in notif.message|lower %}
+                {% set icon_class = 'type-found' %}
+                {% set icon_fa = 'fa-check-circle' %}
+            {% elif 'lost' in notif.message|lower %}
+                {% set icon_class = 'type-lost' %}
+                {% set icon_fa = 'fa-search' %}
+            {% else %}
+                {% set icon_class = 'type-general' %}
+                {% set icon_fa = 'fa-bell' %}
+            {% endif %}
+
+            <div class="notif-card">
+                <div class="notif-icon-wrap {{ icon_class }}">
+                    <i class="fas {{ icon_fa }}"></i>
+                </div>
+                <div class="notif-body">
+                    <p class="notif-message">{{ notif.message }}</p>
+                    <div class="notif-meta">
+                        <span class="notif-time">
+                            <i class="fas fa-clock"></i>
+                            {{ notif.sent_at.strftime('%I:%M %p') }}
+                        </span>
+                        {% if notif.item_id %}
+                        <a href="{{ url_for('item_detail', item_id=notif.item_id) }}" class="notif-item-link">
+                            <i class="fas fa-arrow-right"></i> View Item
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-icon">🔔</div>
+        <h3>All caught up!</h3>
+        <p>You have no notifications yet. When someone claims<br>your item or there are updates, they'll appear here.</p>
+        <a href="{{ url_for('home_page') }}" class="btn btn-primary">
+            <i class="fas fa-home mr-2"></i> Back to Home
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Pass today's date to Jinja via a JS variable (fallback for the 'now' variable)
+// The 'now' variable must be passed from the route — handled via context processor
+</script>
+{% endblock %}

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+
+{% block head %}
+<style>
+.auth-wrapper {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+}
+.auth-card {
+    width: 100%;
+    max-width: 560px;
+    background: rgba(15,25,50,0.82);
+    border: 1px solid rgba(108,99,255,0.18);
+    border-radius: 24px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 4px 16px rgba(108,99,255,0.1);
+    overflow: hidden;
+}
+.auth-card-header {
+    padding: 2.5rem 2.5rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.auth-icon {
+    width: 68px;
+    height: 68px;
+    background: linear-gradient(135deg, rgba(108,99,255,0.25), rgba(48,213,200,0.1));
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 24px rgba(108,99,255,0.25);
+}
+.auth-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-primary) !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    margin-bottom: 0.4rem;
+}
+.auth-subtitle {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+.auth-body { padding: 2rem 2.5rem 2.5rem; }
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+}
+.auth-footer-text {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+.auth-footer-text a { color: var(--accent-primary); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-card-header">
+            <div class="auth-icon">🎓</div>
+            <h2 class="auth-title">Create account</h2>
+            <p class="auth-subtitle">Join the Smart Lost &amp; Found community</p>
+        </div>
+        <div class="auth-body">
+            <form method="POST" action="{{ url_for('register') }}" onsubmit="return validateForm()" id="registerForm">
+
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope mr-1" style="color:var(--accent-primary);"></i>
+                        College Email
+                    </label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           placeholder="you@college.edu" required>
+                    <small>Please use your college email address</small>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="first_name">
+                            <i class="fas fa-user mr-1" style="color:var(--accent-primary);"></i>
+                            First Name
+                        </label>
+                        <input type="text" class="form-control" id="first_name"
+                               name="first_name" placeholder="John" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">
+                            <i class="fas fa-user mr-1" style="color:var(--accent-primary);"></i>
+                            Last Name
+                        </label>
+                        <input type="text" class="form-control" id="last_name"
+                               name="last_name" placeholder="Doe" required>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="roll_number">
+                            <i class="fas fa-id-card mr-1" style="color:var(--accent-primary);"></i>
+                            Roll Number
+                        </label>
+                        <input type="text" class="form-control" id="roll_number"
+                               name="roll_number" placeholder="e.g. 22CSE001" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="batch">
+                            <i class="fas fa-calendar-alt mr-1" style="color:var(--accent-primary);"></i>
+                            Batch Year
+                        </label>
+                        <input type="number" class="form-control" id="batch"
+                               name="batch" min="2020" max="2030"
+                               placeholder="e.g. 2022" required>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="course">
+                            <i class="fas fa-graduation-cap mr-1" style="color:var(--accent-primary);"></i>
+                            Course
+                        </label>
+                        <select class="form-control" id="course" name="course" required>
+                            <option value="" disabled selected>Select course</option>
+                            <option>Btech</option>
+                            <option>Barch</option>
+                            <option>Mtech</option>
+                            <option>Msc</option>
+                            <option>PHD</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="branch">
+                            <i class="fas fa-code-branch mr-1" style="color:var(--accent-primary);"></i>
+                            Branch
+                        </label>
+                        <select class="form-control" id="branch" name="branch" required>
+                            <option value="" disabled selected>Select branch</option>
+                            <option>CSE</option>
+                            <option>ECE</option>
+                            <option>EEE</option>
+                            <option>ICE</option>
+                            <option>Chem</option>
+                            <option>Civil</option>
+                            <option>MECH</option>
+                            <option>Prod</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:1.75rem;">
+                    <label for="password">
+                        <i class="fas fa-lock mr-1" style="color:var(--accent-primary);"></i>
+                        Password
+                    </label>
+                    <input type="password" class="form-control" id="password"
+                           name="password" placeholder="Min 8 chars, letters &amp; numbers" required>
+                    <small>Must be at least 8 characters with letters and numbers</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="registerBtn">
+                    <i class="fas fa-user-plus mr-2"></i> Create Account
+                </button>
+            </form>
+
+            <div class="auth-footer-text" style="margin-top:1.25rem;">
+                Already have an account? <a href="{{ url_for('login') }}"> Sign in</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function validateForm() {
+    const password = document.getElementById("password").value;
+    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!passwordPattern.test(password)) {
+        alert("Password must be at least 8 characters long and contain both letters and numbers.");
+        return false;
+    }
+    return true;
+}
+</script>
+{% endblock %}
