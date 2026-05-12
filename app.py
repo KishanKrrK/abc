@@ -621,29 +621,44 @@ def claim_item(item_id):
     mongo.db.items.update_one({'_id': ObjectId(item_id)}, {'$set': {'claimed': True}})
 
     if item['status'] == 'lost':
-        notif_msg  = (f'{current_user.first_name} {current_user.last_name} says they found your "{item["name"]}"! '
-                      f'Contact them at {current_user.email}.')
+        # The item was LOST by the owner. The current user (claimer) FOUND it.
+        # Notify the OWNER (the person who lost it) that someone found their item.
+        notif_msg  = (f'🎉 {current_user.first_name} {current_user.last_name} says they FOUND your "{item["name"]}"! '
+                      f'Contact them at {current_user.email} to retrieve it.')
         email_subj = f'Someone found your lost item: {item["name"]}!'
-        flash_msg  = f'You have reported finding "{item["name"]}"! The owner has been notified.'
+        email_html = (f'<div style="font-family:Arial;color:#333;max-width:500px">'
+                      f'<h2 style="color:#6c63ff">Smart Lost &amp; Found System</h2>'
+                      f'<p>Great news! <strong>{current_user.first_name} {current_user.last_name}</strong> '
+                      f'says they found your lost item: <strong>"{item["name"]}"</strong>.</p>'
+                      f'<p>📧 Contact them at: <a href="mailto:{current_user.email}">{current_user.email}</a></p>'
+                      f'<p>Once you receive your item back, log in and mark it as <strong>Resolved</strong>.</p>'
+                      f'<hr><p style="font-size:12px;color:#999">Smart Lost &amp; Found — Automated message.</p></div>')
+        flash_msg  = f'✅ You reported finding "{item["name"]}"! The owner has been notified and will contact you.'
     else:
-        notif_msg  = (f'{current_user.first_name} {current_user.last_name} is claiming "{item["name"]}" as their lost item! '
-                      f'Contact them at {current_user.email}.')
-        email_subj = f'Someone is claiming the item you found: {item["name"]}!'
-        flash_msg  = f'You have claimed "{item["name"]}" as yours! The finder has been notified.'
+        # The item was FOUND by the owner. The current user (claimer) LOST it and is reclaiming it.
+        # Notify the FINDER (the person who posted the found item) that the owner came forward.
+        notif_msg  = (f'👤 {current_user.first_name} {current_user.last_name} says "{item["name"]}" is their lost item! '
+                      f'Contact them at {current_user.email} to return it.')
+        email_subj = f'The owner of "{item["name"]}" has come forward!'
+        email_html = (f'<div style="font-family:Arial;color:#333;max-width:500px">'
+                      f'<h2 style="color:#6c63ff">Smart Lost &amp; Found System</h2>'
+                      f'<p><strong>{current_user.first_name} {current_user.last_name}</strong> '
+                      f'is claiming <strong>"{item["name"]}"</strong> as their lost item.</p>'
+                      f'<p>📧 Contact them at: <a href="mailto:{current_user.email}">{current_user.email}</a> to return it.</p>'
+                      f'<p>Once returned, log in and mark it as <strong>Resolved</strong>.</p>'
+                      f'<hr><p style="font-size:12px;color:#999">Smart Lost &amp; Found — Automated message.</p></div>')
+        flash_msg  = f'✅ You claimed "{item["name"]}" as your lost item! The finder has been notified and will contact you.'
 
+    # In-app notification → goes to the item OWNER
     mongo.db.notifications.insert_one({
         'user_id': item['user_id'], 'item_id': item_id,
         'message': notif_msg, 'sent_at': datetime.utcnow()
     })
 
+    # Email notification → send to item owner via Brevo
     owner_doc = mongo.db.users.find_one({'_id': ObjectId(item['user_id'])})
     if owner_doc:
-        try:
-            msg = Message(email_subj, sender=app.config['MAIL_USERNAME'], recipients=[owner_doc['email']])
-            msg.html = f'<div style="font-family:Arial;color:#333;max-width:500px"><h2 style="color:#6c63ff">Smart Lost &amp; Found System</h2><p>Hi {owner_doc["first_name"]},</p><p>{notif_msg}</p><hr><p style="font-size:12px;color:#999">Automated message — do not reply.</p></div>'
-            mail.send(msg)
-        except Exception as e:
-            print(f"Claim notification email failed: {e}")
+        _send_email(owner_doc['email'], email_subj, email_html)
 
     flash(flash_msg, 'success')
     return redirect(url_for('item_detail', item_id=item_id))
