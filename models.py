@@ -1,15 +1,10 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from enum import Enum
-from flask_bcrypt import Bcrypt
-from itsdangerous import URLSafeTimedSerializer as Serializer, SignatureExpired
-from flask import current_app
 from flask_login import UserMixin
+from bson import ObjectId
 
-db = SQLAlchemy()
-bcrypt = Bcrypt()
 
-# Enums for various fields
+# ── Enums (kept identical so templates / app.py need no changes) ──────────────
 
 class ItemStatusEnum(Enum):
     LOST = 'lost'
@@ -34,128 +29,43 @@ class BranchEnum(Enum):
     OTHER = 'Other'
 
 
-class User(db.Model, UserMixin):
-    __tablename__ = 'users'
+# ── Flask-Login compatible User wrapper ────────────────────────────────────────
+# MongoDB stores users as plain dicts; this class wraps a doc so flask-login
+# and all existing app.py references (current_user.email, etc.) keep working.
 
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    profile_pic = db.Column(db.String(255), default='default.jpg')
-    is_verified = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    roll_number = db.Column(db.String(20), nullable=False)
-    batch = db.Column(db.Integer, nullable=False)
-    course = db.Column(db.Enum(CourseEnum), nullable=False)
-    branch = db.Column(db.Enum(BranchEnum), nullable=False)
+class User(UserMixin):
+    def __init__(self, doc: dict):
+        self._doc = doc
 
-    items = db.relationship('Item', backref='owner', lazy=True)
-    password_reset_tokens = db.relationship('PasswordResetToken', backref='user', lazy=True)
-    notifications = db.relationship('Notification', backref='user', lazy=True)
-    claimed_items = db.relationship('ClaimedItem', backref='claimer', lazy=True)
+    # flask-login requires get_id() to return a string
+    def get_id(self):
+        return str(self._doc['_id'])
 
-    def set_password(self, password):
-        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
-
-    def check_password(self, password):
-        return bcrypt.check_password_hash(self.password, password)
-
-    def get_reset_token(self, expires_sec=1800):
-        s = Serializer(current_app.config['SECRET_KEY'])
-        return s.dumps({'user_id': self.id}, salt=current_app.config['SECURITY_PASSWORD_SALT'])
-
-    @staticmethod
-    def verify_reset_token(token):
-        s = Serializer(current_app.config['SECRET_KEY'])
+    # Attribute-style access so current_user.email etc. still work
+    def __getattr__(self, name):
         try:
-            data = s.loads(token, salt=current_app.config['SECURITY_PASSWORD_SALT'], max_age=1800)
-        except (SignatureExpired, ValueError):
-            return None
-        return User.query.get(data['user_id'])
+            return self._doc[name]
+        except KeyError:
+            raise AttributeError(f"User has no attribute '{name}'")
 
-    def __repr__(self):
-        return f"User('{self.email}', '{self.first_name}', '{self.last_name}')"
+    def __setattr__(self, name, value):
+        if name.startswith('_'):
+            super().__setattr__(name, value)
+        else:
+            self._doc[name] = value
 
-class Category(db.Model):
-    __tablename__ = 'categories'
+    # Convenience: expose the raw ObjectId
+    @property
+    def id(self):
+        return str(self._doc['_id'])
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
+    @property
+    def is_verified(self):
+        return self._doc.get('is_verified', False)
 
-    items = db.relationship('Item', backref='category', lazy=True)
-
-    def __repr__(self):
-        return f"Category('{self.name}')"
-
-
-class Item(db.Model):
-    __tablename__ = 'items'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
-    image_file = db.Column(db.String(255), default='default.jpg')
-    status = db.Column(db.Enum('lost', 'found'), nullable=False)  # Updated Enum
-    date = db.Column(db.Date, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    claimed = db.Column(db.Boolean, default=False)
-    resolved = db.Column(db.Boolean, default=False)
-    location = db.Column(db.String(255))
-
-    def __repr__(self):
-        return f"Item('{self.name}', '{self.status}', '{self.date}')"
+    def to_dict(self):
+        return self._doc
 
 
-
-class PasswordResetToken(db.Model):
-    __tablename__ = 'password_reset_tokens'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    otp = db.Column(db.String(6), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    expires_at = db.Column(db.DateTime, nullable=False)
-
-    def __repr__(self):
-        return f"PasswordResetToken('{self.user_id}', '{self.otp}')"
-
-class Notification(db.Model):
-    __tablename__ = 'notifications'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=True)  # nullable: system notifs have no item
-    message = db.Column(db.String(255), nullable=False)
-    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f"Notification('{self.user_id}', '{self.item_id}', '{self.message}')"
-
-class ClaimedItem(db.Model):
-    __tablename__ = 'claimed_items'
-
-    id = db.Column(db.Integer, primary_key=True)
-    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
-    claimer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    claimed_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f"ClaimedItem('{self.item_id}', '{self.claimer_id}')"
-
-
-class Feedback(db.Model):
-    __tablename__ = 'feedback'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # nullable for anonymous
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    rating = db.Column(db.Integer, nullable=False, default=5)  # 1-5 stars
-    category = db.Column(db.String(50), nullable=False, default='General')
-    message = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f"Feedback('{self.name}', rating={self.rating})"
+# ── MongoDB collection helpers (used inside app.py via mongo.db.*) ─────────────
+# No ORM needed — pure PyMongo.  Keeping this file lightweight.

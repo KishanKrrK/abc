@@ -1,0 +1,11 @@
+venv/
+venv_new/
+__pycache__/
+*.pyc
+*.pyo
+instance/
+.env
+*.db
+*.sqlite
+.DS_Store
+test_mongo.py

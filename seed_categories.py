@@ -1,28 +1,16 @@
-"""
-seed_categories.py — Run this once to populate the categories table.
-Usage:  python seed_categories.py
-"""
-from app import app
-from models import db, Category
+from app import app, mongo
 
 CATEGORIES = [
-    "Electronics",
-    "Books & Stationery",
-    "Clothing & Accessories",
-    "Bags & Luggage",
-    "Keys & Cards",
-    "Sports Equipment",
-    "Jewellery & Watches",
-    "Documents & ID",
-    "Water Bottles & Food",
-    "Spectacles & Headphones",
-    "Wallets & Money",
-    "Other",
+    'Electronics', 'Books & Stationery', 'Clothing & Accessories',
+    'ID Cards & Documents', 'Keys', 'Bags & Wallets',
+    'Sports Equipment', 'Jewellery', 'Other'
 ]
 
 with app.app_context():
     for name in CATEGORIES:
-        if not Category.query.filter_by(name=name).first():
-            db.session.add(Category(name=name))
-    db.session.commit()
-    print(f"Seeded {len(CATEGORIES)} categories successfully.")
+        if not mongo.db.categories.find_one({'name': name}):
+            mongo.db.categories.insert_one({'name': name})
+            print(f"Inserted category: {name}")
+        else:
+            print(f"Category already exists: {name}")
+    print("Done seeding categories.")
