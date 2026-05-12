@@ -45,6 +45,40 @@ def get_item_or_404(item_id):
         abort(404)
     return item
 
+def enrich_item(item):
+    """Add id, category{name}, and owner{} fields to an item dict for template use."""
+    item['id'] = str(item['_id'])
+    # Category lookup
+    cid = item.get('category_id', '')
+    if cid:
+        try:
+            cat = mongo.db.categories.find_one({'_id': ObjectId(cid)})
+            item['category'] = {'name': cat['name']} if cat else None
+        except Exception:
+            item['category'] = None
+    else:
+        item['category'] = None
+    # Owner lookup
+    uid = item.get('user_id', '')
+    if uid:
+        try:
+            owner = mongo.db.users.find_one(
+                {'_id': ObjectId(uid)},
+                {'first_name': 1, 'last_name': 1, 'profile_pic': 1}
+            )
+            item['owner'] = owner
+        except Exception:
+            item['owner'] = None
+    else:
+        item['owner'] = None
+    return item
+
+def enrich_categories(categories):
+    """Add string id field to each category dict."""
+    for cat in categories:
+        cat['id'] = str(cat['_id'])
+    return categories
+
 @login_manager.user_loader
 def load_user(user_id):
     try:
@@ -393,7 +427,7 @@ def add_item():
         flash('Item reported successfully!', 'success')
         return redirect(url_for('item_detail', item_id=str(result.inserted_id)))
 
-    categories = list(mongo.db.categories.find())
+    categories = enrich_categories(list(mongo.db.categories.find()))
     return render_template('add_item.html', categories=categories)
 
 @app.route('/edit_item/<item_id>', methods=['GET', 'POST'])
@@ -443,7 +477,8 @@ def edit_item(item_id):
         flash('Item updated successfully.', 'success')
         return redirect(url_for('item_detail', item_id=item_id))
 
-    categories = list(mongo.db.categories.find())
+    categories = enrich_categories(list(mongo.db.categories.find()))
+    item = enrich_item(item)  # add id, category, owner for template
     return render_template('edit_item.html', item=item, categories=categories)
 
 @app.route('/delete_item/<item_id>', methods=['POST'])
@@ -462,7 +497,7 @@ def delete_item(item_id):
 @app.route('/confirm_delete/<item_id>')
 @login_required
 def confirm_delete(item_id):
-    item = get_item_or_404(item_id)
+    item = enrich_item(get_item_or_404(item_id))
     if item['user_id'] != current_user.id:
         flash('You are not authorized to delete this item.', 'danger')
         return redirect(url_for('item_detail', item_id=item_id))
@@ -470,7 +505,7 @@ def confirm_delete(item_id):
 
 @app.route('/item/<item_id>')
 def item_detail(item_id):
-    item    = get_item_or_404(item_id)
+    item = enrich_item(get_item_or_404(item_id))
     claimer = None
     if item.get('claimed'):
         claim = mongo.db.claimed_items.find_one({'item_id': item_id})
