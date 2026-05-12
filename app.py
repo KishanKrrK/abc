@@ -18,7 +18,7 @@ app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb+srv://kishan97987
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 # Resend API key — set RESEND_API_KEY env var on Render
-resend.api_key = os.environ.get('RESEND_API_KEY', '')
+resend.api_key = os.environ.get('RESEND_API_KEY', 're_KnsbyW3t_ERF9txWhNyGUsmr3USY8LpFF')
 REND_FROM_EMAIL = os.environ.get('MAIL_FROM', 'onboarding@resend.dev')
 
 mongo = PyMongo(app)
