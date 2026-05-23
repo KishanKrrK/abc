@@ -1,19 +1,19 @@
 import requests
 
 import os
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "your_api_key_here")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "re_KnsbyW3t_ERF9txWhNyGUsmr3USY8LpFF")
 try:
     response = requests.post(
-        'https://api.brevo.com/v3/smtp/email',
+        'https://api.resend.com/emails',
         headers={
-            'api-key': BREVO_API_KEY,
+            'Authorization': f'Bearer {BREVO_API_KEY}',
             'Content-Type': 'application/json'
         },
         json={
-            'sender': {'name': 'Smart Lost & Found', 'email': 'shashishe2160@gmail.com'},
-            'to': [{'email': 'kishan.sk225@gmail.com'}],
+            'from': 'Smart Lost & Found <onboarding@resend.dev>',
+            'to': ['kishan.sk225@gmail.com'],
             'subject': 'Test OTP - Smart Lost & Found',
-            'htmlContent': '<h2>Test Email</h2><p>Your OTP is: <strong>123456</strong></p>'
+            'html': '<h2>Test Email</h2><p>Your OTP is: <strong>123456</strong></p>'
         },
         timeout=10
     )
