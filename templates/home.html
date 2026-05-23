@@ -58,7 +58,8 @@
     {% for item in items %}
     <div class="icard">
       <div class="img-w">
-        <img src="{{ url_for('static', filename='images/' + item.image_file) }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/default.jpg') }}'">
+        <img src="{{ item.image_file|imgurl }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/default.jpg') }}'">
+
         <div class="ov"></div>
         <span class="stag {{ item.status|lower }}">{{ item.status }}</span>
         <span class="new-tag">NEW</span>
@@ -70,7 +71,8 @@
         <div class="foot">
           <div class="ua">
             {% if item.owner %}
-            <img src="{{ url_for('static', filename='images/' + (item.owner.profile_pic if item.owner.profile_pic and item.owner.profile_pic != 'None' else 'default.jpg')) }}" onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'">
+            <img src="{{ (item.owner.profile_pic)|imgurl }}" onerror="this.src='{{ url_for('static', filename='images/default.jpg') }}'">
+
             <span>{{ item.owner.first_name }}</span>
             {% endif %}
           </div>
@@ -123,18 +125,43 @@
   </div>
 </div>
 
-<!-- TESTIMONIALS -->
+<!-- TESTIMONIALS (live from DB, horizontal scroll carousel) -->
 <div class="fw h-test">
   <div style="text-align:center;">
     <div class="sec-pill">⭐ Student Reviews</div>
     <div class="sec-title">What Students <span>Say</span></div>
+    <div class="sec-sub">Real feedback from your fellow students — latest first.</div>
   </div>
-  <div class="test-grid">
-    <div class="tc"><div class="stars">★★★★★</div><p>"Found my laptop bag within 2 hours! The notification was instant and the person returned it same day."</p><div class="ta"><img src="{{ url_for('static', filename='images/default.jpg') }}"><div><div class="tn">Rahul Sharma</div><div class="ts">CSE · 2nd Year</div></div></div></div>
-    <div class="tc"><div class="stars">★★★★★</div><p>"I found someone's ID card near the library. Posted it and the owner claimed it within an hour!"</p><div class="ta"><img src="{{ url_for('static', filename='images/default.jpg') }}"><div><div class="tn">Priya Singh</div><div class="ts">ECE · 3rd Year</div></div></div></div>
-    <div class="tc"><div class="stars">★★★★★</div><p>"This platform saved me. Lost my wallet and found it back within a day. Absolutely incredible!"</p><div class="ta"><img src="{{ url_for('static', filename='images/default.jpg') }}"><div><div class="tn">Minas R. Piriton</div><div class="ts">MECH · 1st Year</div></div></div></div>
-    <div class="tc"><div class="stars">★★★★☆</div><p>"A student returned my calculator through this system. Really trustworthy platform on campus."</p><div class="ta"><img src="{{ url_for('static', filename='images/default.jpg') }}"><div><div class="tn">Sidhant Jain</div><div class="ts">Civil · 4th Year</div></div></div></div>
+
+  {% if feedbacks %}
+  <div class="rev-wrap">
+    <button class="rev-arrow rev-prev" id="revPrev" aria-label="Previous">&#8592;</button>
+    <div class="rev-track" id="revTrack">
+      {% for fb in feedbacks %}
+      <div class="tc rev-card">
+        <div class="stars">
+          {% for i in range(fb.rating|default(5)|int) %}★{% endfor %}{% for i in range(5 - fb.rating|default(5)|int) %}☆{% endfor %}
+        </div>
+        <p>"{{ fb.message[:160] }}{% if fb.message|length > 160 %}…{% endif %}"</p>
+        <div class="ta">
+          <div class="tc-av">{{ (fb.name or 'A')[0]|upper }}</div>
+          <div>
+            <div class="tn">{{ fb.name or 'Anonymous' }}</div>
+            <div class="ts">{{ fb.category or 'General' }}{% if fb.created_at %} · {{ fb.created_at.strftime('%b %Y') }}{% endif %}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="rev-arrow rev-next" id="revNext" aria-label="Next">&#8594;</button>
   </div>
+  {% else %}
+  <div class="es" style="padding:3rem 2rem;">
+    <div class="ei">💬</div>
+    <p style="color:rgba(255,255,255,.4); font-size:.95rem;">No feedback yet — be the first to share your experience!</p>
+    <a href="{{ url_for('feedback') }}" class="hb1" style="font-size:.85rem;padding:.6rem 1.4rem;margin-top:1rem;display:inline-flex;">Give Feedback</a>
+  </div>
+  {% endif %}
 </div>
 
 <!-- FAQ -->
@@ -164,5 +191,29 @@ document.querySelectorAll('.faqq').forEach(function(b){
     if(!op){a.classList.add('sh');this.classList.add('op');}
   });
 });
+
+// Reviews carousel arrows
+(function(){
+  var track = document.getElementById('revTrack');
+  var prev  = document.getElementById('revPrev');
+  var next  = document.getElementById('revNext');
+  if (!track || !prev || !next) return;
+
+  function cardWidth() {
+    var card = track.querySelector('.rev-card');
+    if (!card) return 300;
+    return card.offsetWidth + parseInt(getComputedStyle(track).gap || '20');
+  }
+
+  function updateArrows() {
+    prev.disabled = track.scrollLeft <= 4;
+    next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+  }
+
+  prev.addEventListener('click', function(){ track.scrollBy({ left: -cardWidth(), behavior:'smooth' }); });
+  next.addEventListener('click', function(){ track.scrollBy({ left:  cardWidth(), behavior:'smooth' }); });
+  track.addEventListener('scroll', updateArrows, { passive:true });
+  updateArrows();
+})();
 </script>
 {% endblock %}

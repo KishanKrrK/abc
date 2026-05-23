@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()  # loads .env into os.environ for local development (no-op in production)
+
 from flask import Flask, render_template, redirect, url_for, flash, request, session, abort
 from flask_bcrypt import Bcrypt
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
@@ -9,6 +12,8 @@ import random
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 import requests
+import cloudinary
+import cloudinary.uploader
 from models import User, ItemStatusEnum, CourseEnum, BranchEnum
 
 app = Flask(__name__)
@@ -22,12 +27,47 @@ BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 BREVO_FROM_EMAIL = os.environ.get('BREVO_FROM_EMAIL', 'shashishe2160@gmail.com')
 BREVO_FROM_NAME = 'Smart Lost & Found'
 
+# Cloudinary — persistent image storage (free tier: 25GB)
+cloudinary.config(
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
+    api_key    = os.environ.get('CLOUDINARY_API_KEY', ''),
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET', ''),
+    secure     = True
+)
+
 mongo = PyMongo(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 os.makedirs(os.path.join('static', 'images'), exist_ok=True)
+
+# ── Image helpers ──────────────────────────────────────────────────────────────
+def upload_image(file_storage, folder='lost_found'):
+    """Upload to Cloudinary if configured, else save locally. Returns URL or filename."""
+    if cloudinary.config().cloud_name:
+        try:
+            result = cloudinary.uploader.upload(
+                file_storage,
+                folder=folder,
+                transformation=[{'width': 800, 'height': 800, 'crop': 'limit', 'quality': 'auto'}]
+            )
+            return result['secure_url']  # persistent Cloudinary URL
+        except Exception as e:
+            print(f'Cloudinary upload failed: {e}')
+    # Fallback: save locally
+    fn = secure_filename(file_storage.filename)
+    file_storage.save(os.path.join(app.config['UPLOAD_FOLDER'], fn))
+    return fn
+
+@app.template_filter('imgurl')
+def imgurl_filter(value):
+    """Convert stored image value (URL or filename) to a usable src URL."""
+    if not value or value == 'None':
+        return url_for('static', filename='images/default.jpg')
+    if value.startswith('http'):
+        return value  # already a Cloudinary / external URL
+    return url_for('static', filename='images/' + value)
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 def allowed_file(filename):
@@ -382,9 +422,14 @@ def home_page():
                     last = num
 
     pagination = Pagination(page, per_page, total)
+
+    # Fetch real feedback for testimonials section (latest first, max 20)
+    feedbacks = list(mongo.db.feedback.find().sort('created_at', -1).limit(20))
+
     return render_template('home.html', items=items, categories=categories,
                            pagination=pagination, search_term=search_term,
-                           category_id=category_id, status_filter=status_filter)
+                           category_id=category_id, status_filter=status_filter,
+                           feedbacks=feedbacks)
 
 @app.route('/add_item', methods=['GET', 'POST'])
 @login_required
@@ -416,8 +461,7 @@ def add_item():
             if not allowed_file(image.filename):
                 flash('Only image files (JPG, PNG, GIF, WEBP) are allowed.', 'danger')
                 return redirect(url_for('add_item'))
-            image_filename = secure_filename(image.filename)
-            image.save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+            image_filename = upload_image(image, folder='lost_found')
 
         result = mongo.db.items.insert_one({
             'name': name, 'description': description,
@@ -472,9 +516,7 @@ def edit_item(item_id):
             if not allowed_file(image_file.filename):
                 flash('Only image files (JPG, PNG, GIF, WEBP) are allowed.', 'danger')
                 return redirect(url_for('edit_item', item_id=item_id))
-            fn = secure_filename(image_file.filename)
-            image_file.save(os.path.join(app.config['UPLOAD_FOLDER'], fn))
-            update['image_file'] = fn
+            update['image_file'] = upload_image(image_file, folder='lost_found')
 
         mongo.db.items.update_one({'_id': ObjectId(item_id)}, {'$set': update})
         flash('Item updated successfully.', 'success')
@@ -573,9 +615,7 @@ def update_profile():
         if 'profile_pic' in request.files:
             file = request.files['profile_pic']
             if file and file.filename and allowed_file(file.filename):
-                fn = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], fn))
-                update['profile_pic'] = fn
+                update['profile_pic'] = upload_image(file, folder='profile_pics')
 
         mongo.db.users.update_one({'_id': ObjectId(current_user.id)}, {'$set': update})
         flash('Profile updated successfully.', 'success')
