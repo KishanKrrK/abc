@@ -140,33 +140,33 @@ def generate_otp():
     return f"{random.randint(100000, 999999)}"
 
 def _send_email(to_email, subject, html_body):
-    """Send email via Brevo HTTP API. Returns True on success, False on failure."""
+    """Send email via Resend HTTP API. Returns True on success, False on failure."""
     if not BREVO_API_KEY:
-        print("BREVO_API_KEY not set — skipping email")
+        print("API_KEY not set — skipping email")
         return False
     try:
         response = requests.post(
-            'https://api.brevo.com/v3/smtp/email',
+            'https://api.resend.com/emails',
             headers={
-                'api-key': BREVO_API_KEY,
+                'Authorization': f'Bearer {BREVO_API_KEY}',
                 'Content-Type': 'application/json'
             },
             json={
-                'sender': {'name': BREVO_FROM_NAME, 'email': BREVO_FROM_EMAIL},
-                'to': [{'email': to_email}],
+                'from': f'{BREVO_FROM_NAME} <onboarding@resend.dev>',
+                'to': [to_email],
                 'subject': subject,
-                'htmlContent': html_body
+                'html': html_body
             },
             timeout=10
         )
         if response.status_code in (200, 201):
-            print(f"Email sent to {to_email} via Brevo")
+            print(f"Email sent to {to_email} via Resend")
             return True
         else:
-            print(f"Brevo error {response.status_code}: {response.text}")
+            print(f"Resend error {response.status_code}: {response.text}")
             return False
     except Exception as e:
-        print(f"Failed to send email via Brevo: {e}")
+        print(f"Failed to send email via Resend: {e}")
         return False
 
 def send_otp_reg(email, otp):
